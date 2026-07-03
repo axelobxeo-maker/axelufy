@@ -75,6 +75,7 @@ interface AdminPanelProps {
   visitorData: Array<{ date: string; visitors: number; downloads: number; uploads: number }>;
   soundPlay: (type: 'click' | 'success' | 'delete') => void;
   isTableMissing?: boolean;
+  dbWriteError?: string | null;
 }
 
 export default function AdminPanel({
@@ -105,7 +106,8 @@ export default function AdminPanel({
   onSaveRequest,
   visitorData,
   soundPlay,
-  isTableMissing = false
+  isTableMissing = false,
+  dbWriteError = null
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics' | 'faqs' | 'polling' | 'requests'>('mod');
 
@@ -610,15 +612,19 @@ export default function AdminPanel({
         </button>
       </div>
 
-      {/* Table Missing Warning */}
-      {isTableMissing && (
+      {/* Table Missing or Write Error Warning */}
+      {(isTableMissing || dbWriteError) && (
         <div className="bg-red-50 border-3 border-red-500 p-4 rounded-xl text-black space-y-2 mb-4 shadow-[4px_4px_0px_0px_#EF4444]">
           <div className="flex items-center gap-2 text-red-600 font-extrabold text-xs uppercase">
             <AlertTriangle className="w-5 h-5 text-red-600 animate-pulse animate-bounce" />
-            <span>⚠️ TABEL DATABASE 'settings' BELUM DIBUAT</span>
+            <span>⚠️ TENTANG KONEKSI DAN KEAMANAN DATABASE</span>
           </div>
           <p className="text-[10px] text-gray-700 font-bold leading-normal">
-            Data Anda dari Supabase tidak muncul karena tabel <code className="bg-zinc-200 px-1 py-0.5 border border-black rounded font-mono">settings</code> belum dibuat di database baru Anda.
+            {isTableMissing ? (
+              <>Data Anda dari Supabase tidak muncul karena tabel <code className="bg-zinc-200 px-1 py-0.5 border border-black rounded font-mono">settings</code> belum dibuat di database baru Anda.</>
+            ) : (
+              <>Penyimpanan data ke cloud gagal karena masalah izin (RLS) atau koneksi. Pesan error: <code className="bg-zinc-200 px-1 py-0.5 border border-red-400 rounded font-mono text-red-600">{dbWriteError}</code>. Data Anda saat ini hanya tersimpan di browser Anda!</>
+            )}
           </p>
           <div className="text-[10px] text-gray-700 font-bold leading-normal flex items-center gap-1.5 flex-wrap">
             <span>Silakan buka tab</span>
@@ -629,7 +635,7 @@ export default function AdminPanel({
               <Database className="w-3 h-3 text-black" />
               <span>SQL Setup</span>
             </button>
-            <span>di atas, salin skripnya, lalu jalankan di SQL Editor Supabase Anda!</span>
+            <span>di atas, salin skripnya, lalu jalankan di SQL Editor Supabase Anda untuk mengaktifkan tabel dan kebijakan RLS!</span>
           </div>
         </div>
       )}

@@ -152,6 +152,7 @@ export default function App() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isTableMissing, setIsTableMissing] = useState(false);
+  const [dbWriteError, setDbWriteError] = useState<string | null>(null);
 
   // Polling Survey State
   const [polling, setPolling] = useState<PollingTopic>({
@@ -256,16 +257,19 @@ export default function App() {
         if (error.code === '42P01' || error.message?.includes('relation "settings" does not exist')) {
           setIsTableMissing(true);
         }
+        setDbWriteError(error.message);
         throw new Error(error.message);
       }
       if (data && data.value !== null && data.value !== undefined) {
         localStorage.setItem(`cache_${key}`, JSON.stringify(data.value));
+        setDbWriteError(null);
         return data.value;
       }
       return defaultValue;
     } catch (err: any) {
       console.warn(`[Supabase Error Fallback] Mengambil cache lokal untuk key: ${key}`);
       const errMsg = err?.message || "";
+      setDbWriteError(errMsg);
       if (errMsg.includes('relation "settings" does not exist') || err?.code === '42P01') {
         setIsTableMissing(true);
       }
@@ -290,14 +294,21 @@ export default function App() {
         .from('settings')
         .upsert({ key, value }, { onConflict: 'key' });
       if (error) {
+        setDbWriteError(error.message);
         if (error.code === '42P01' || error.message?.includes('relation "settings" does not exist')) {
           setIsTableMissing(true);
         }
+        showToast(`Gagal sinkronisasi cloud: ${error.message}. Data hanya tersimpan di browser Anda saat ini!`, "error");
         throw new Error(error.message);
+      } else {
+        setDbWriteError(null);
       }
     } catch (err: any) {
       console.error("Gagal sinkronisasi data cloud:", err);
-      if (err?.code === '42P01' || err?.message?.includes('relation "settings" does not exist')) {
+      const errMsg = err?.message || "";
+      setDbWriteError(errMsg);
+      showToast(`Gagal sinkronisasi cloud: ${errMsg}. Data hanya tersimpan di browser Anda saat ini!`, "error");
+      if (errMsg.includes('relation "settings" does not exist') || err?.code === '42P01') {
         setIsTableMissing(true);
       }
     }
@@ -1670,6 +1681,7 @@ export default function App() {
                   visitorData={STATIC_VISITOR_STATS}
                   soundPlay={soundPlay}
                   isTableMissing={isTableMissing}
+                  dbWriteError={dbWriteError}
                 />
               </div>
             ) : (
