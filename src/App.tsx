@@ -168,6 +168,7 @@ export default function App() {
   const [spamCounter, setSpamCounter] = useState(0);
   const [easterEggScore, setEasterEggScore] = useState(0);
   const [easterEggHigh, setEasterEggHigh] = useState(0);
+  const [footerClickCount, setFooterClickCount] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState(137);
   const [showAnnouncePopup, setShowAnnouncePopup] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -2206,7 +2207,22 @@ export default function App() {
             ))}
           </div>
 
-          <p className="font-syne font-extrabold uppercase tracking-wider text-xs">
+          <p 
+            onClick={() => {
+              playSynth('click');
+              const nextClicks = footerClickCount + 1;
+              if (nextClicks >= 7) {
+                setFooterClickCount(0);
+                playSynth('success');
+                showToast("Membuka Logy Panel...", "success");
+                window.location.hash = '#logy';
+              } else {
+                setFooterClickCount(nextClicks);
+                showToast(`Klik ${7 - nextClicks} kali lagi untuk akses rahasia`, "info");
+              }
+            }}
+            className="font-syne font-extrabold uppercase tracking-wider text-xs cursor-pointer select-none hover:text-theme-accent transition-colors"
+          >
             © 2026 {webTitle} ID - DEVELOPED BY AXELUF TEAM
           </p>
           <p className="text-[9px] text-gray-500 mt-2 font-mono uppercase tracking-wider">
