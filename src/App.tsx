@@ -59,6 +59,21 @@ import ModCard from './components/ModCard';
 import AdminPanel from './components/AdminPanel';
 import FAQPolling from './components/FAQPolling';
 
+const isVideoUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  const lowercase = url.toLowerCase();
+  return (
+    lowercase.endsWith('.mp4') ||
+    lowercase.endsWith('.webm') ||
+    lowercase.endsWith('.ogg') ||
+    lowercase.endsWith('.mov') ||
+    lowercase.includes('.mp4?') ||
+    lowercase.includes('.webm?') ||
+    lowercase.includes('/video/') ||
+    (lowercase.includes('imagekit.io') && lowercase.includes('.mp4'))
+  );
+};
+
 // SUPABASE CLIENT INITIALIZATION
 const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || "https://acsgbqipvdppkuetpobu.supabase.co";
 const SUPABASE_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjc2dicWlwdmRwcGt1ZXRwb2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNTUzMzksImV4cCI6MjA5ODYzMTMzOX0.n7iKRHdKxQAlsK8sCi_qaHZukLsoO7GqECOuAXbRSDc";
@@ -1274,109 +1289,17 @@ export default function App() {
         </div>
       )}
 
-      {/* BROADCAST BAR TICKER */}
-      <div className="bg-black text-[#A3FFD6] py-1.5 border-b-3 border-black font-extrabold text-[10px] uppercase ticker-wrap relative z-40">
-        <div className="ticker-content inline-flex gap-8">
-          {webBroadcastText.split('|').map((item, idx) => (
-            <span key={idx} className="mr-12 inline-block">
-              {item.trim()}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* TOP CONFIGURATION / SOCIAL BAR */}
-      <div className="bg-black text-white py-2 px-4 flex justify-between items-center text-[10px] font-extrabold border-b-2 border-black relative z-50">
-        <div className="flex items-center gap-2">
-          <span className="hidden sm:inline">AXELUF V5.3 PRO ULTRA (STABLE CLUSTER)</span>
-          <span className="sm:hidden">AXELUF V5.3 PRO</span>
-          <span className="bg-[#4CCD99] text-black px-1.5 py-0.5 rounded font-extrabold text-[8px] border border-black animate-pulse">
-            ● ONLINE: {onlineUsers} MEMBER
-          </span>
-          {isOffline && (
-            <span className="bg-red-500 text-white px-1.5 py-0.5 rounded font-bold text-[8px] border border-white">
-              OFFLINE CACHE
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setSoundEnabled(!soundEnabled);
-              showToast(soundEnabled ? 'Suara Dinonaktifkan' : 'Suara Diaktifkan', 'info');
-              playSynth('click');
-            }}
-            className={`px-2 py-0.5 border border-white rounded hover:bg-zinc-800 text-[8px] flex items-center gap-1 ${
-              soundEnabled ? 'bg-zinc-900 text-green-400' : 'bg-zinc-800 text-gray-500'
-            }`}
-          >
-            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-            <span>SUARA: {soundEnabled ? 'ON' : 'OFF'}</span>
-          </button>
-
-          {/* Theme Switcher Quick dots */}
-          <div className="flex items-center gap-1.5 border-l border-zinc-700 pl-2">
-            <button onClick={() => { setCurrentTheme('green'); playSynth('click'); }} className="w-3.5 h-3.5 rounded-full bg-[#A3FFD6] border border-white" title="Retro Green" />
-            <button onClick={() => { setCurrentTheme('pink'); playSynth('click'); }} className="w-3.5 h-3.5 rounded-full bg-[#FF71CD] border border-white" title="Cyberpunk Pink" />
-            <button onClick={() => { setCurrentTheme('mint'); playSynth('click'); }} className="w-3.5 h-3.5 rounded-full bg-[#B2F9FC] border border-white" title="Mint Fresh" />
-            <button onClick={() => { setCurrentTheme('dark'); playSynth('click'); }} className="w-3.5 h-3.5 rounded-full bg-[#121214] border border-white" title="Deep Dark" />
-            <button onClick={() => { setCurrentTheme('orange'); playSynth('click'); }} className="w-3.5 h-3.5 rounded-full bg-[#FF8A08] border border-white" title="Lava Orange" />
-          </div>
-        </div>
-      </div>
-
-      {/* TOP HEADER MENU & SEARCH NAVIGATION */}
-      <nav className="bg-white text-black border-3 border-black brutal-shadow p-3.5 relative z-30 max-w-3xl mx-auto mt-4 flex items-center justify-between gap-3 rounded-2xl">
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => {
-              playSynth('click');
-              setIsSidebarOpen(!isSidebarOpen);
-            }}
-            className="bg-[#A3FFD6] text-black border-3 border-black p-2 brutal-shadow-sm brutal-btn hover:bg-[#8AE8C0] font-extrabold text-xl flex items-center justify-center h-10 w-10 shrink-0"
-            title="Buka Menu Sidebar"
-          >
-            <Menu className="w-6 h-6 text-black" />
-          </button>
-          <div>
-            <span className="font-syne font-extrabold text-lg sm:text-xl tracking-tight uppercase block leading-none">
-              {webTitle}
-            </span>
-            <span className="text-[8px] uppercase tracking-wider font-extrabold bg-[#4CCD99] px-2 py-0.5 border border-black text-black rounded-full inline-block mt-1">
-              PRO ULTRA V5.3
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isInstallable && (
-            <button
-              onClick={handleInstallApp}
-              className="bg-[#FFF200] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-yellow-400 active:translate-y-0.5 shadow-sm flex items-center gap-1"
-            >
-              <Download className="w-3.5 h-3.5 text-black" />
-              <span>Install PWA App</span>
-            </button>
-          )}
-
-          {/* Quick random recommendation mod */}
-          <button
-            onClick={() => {
-              playSynth('success');
-              if (mods.length === 0) return;
-              const randomIdx = Math.floor(Math.random() * mods.length);
-              showToast(`Rekomendasi Terpilih: ${mods[randomIdx].name}`, 'success');
-              const el = document.getElementById(`mod-card-${randomIdx}`);
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="bg-[#FF71CD] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-pink-400 active:translate-y-0.5 shadow-sm flex items-center gap-1"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-black" />
-            <span>SURPRISE ME</span>
-          </button>
-        </div>
-      </nav>
+      {/* FLOATING SIDEBAR MENU BUTTON */}
+      <button
+        onClick={() => {
+          playSynth('click');
+          setIsSidebarOpen(true);
+        }}
+        className="fixed bottom-5 right-5 bg-[#CCFF00] hover:bg-[#A3E600] text-black border-3 border-black w-12 h-12 rounded-xl flex items-center justify-center brutal-shadow-sm hover:translate-y-[-2px] active:translate-y-1 transition-all z-[99] cursor-pointer"
+        title="Buka Menu Sidebar"
+      >
+        <Menu className="w-6 h-6 text-black" />
+      </button>
 
       {/* SIDEBAR DRAWER PANEL */}
       {isSidebarOpen && (
@@ -1510,6 +1433,16 @@ export default function App() {
                   </h4>
                   <div className="space-y-2 text-[9px]">
                     <div>
+                      <span className="block font-bold text-gray-500 uppercase mb-1">Pilihan Warna Tema</span>
+                      <div className="flex items-center gap-1.5 bg-white p-2 border border-black rounded-lg">
+                        <button onClick={() => { setCurrentTheme('green'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#CCFF00] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'green' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Retro Green Lime" />
+                        <button onClick={() => { setCurrentTheme('pink'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#FF71CD] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'pink' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Cyberpunk Pink" />
+                        <button onClick={() => { setCurrentTheme('mint'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#B2F9FC] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'mint' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Mint Fresh" />
+                        <button onClick={() => { setCurrentTheme('dark'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#121214] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'dark' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Deep Dark" />
+                        <button onClick={() => { setCurrentTheme('orange'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#FF8A08] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'orange' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Lava Orange" />
+                      </div>
+                    </div>
+                    <div>
                       <span className="block font-bold text-gray-500 uppercase mb-1">Sudut Kelengkungan (Border Radius)</span>
                       <div className="flex gap-1">
                         {['4px', '12px', '16px', '24px'].map((rad) => (
@@ -1601,37 +1534,97 @@ export default function App() {
         {/* WEBPAGE BRANDING SECTION */}
         <div className="w-full bg-white border-3 border-black brutal-shadow mb-6 overflow-hidden rounded-2xl">
           <div className="relative w-full h-36 sm:h-48 bg-zinc-900 border-b-3 border-black overflow-hidden flex items-center justify-center">
-            <img
-              src={webBannerImage}
-              alt="Banner YouTube Portal"
-              className="w-full h-full object-cover select-none"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.onerror = null;
-                target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221200%22 height=%22300%22%3E%3Crect width=%221200%22 height=%22300%22 fill=%22%232E8B6E%22/%3E%3Ctext x=%22600%22 y=%22170%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22white%22%3EAXELUF PORTAL%3C/text%3E%3C/svg%3E';
-              }}
-            />
-          </div>
-          <div className={`p-4 pt-0 relative flex flex-col ${profileAlignment} gap-2`}>
-            <div className="relative -mt-10 sm:-mt-14 z-10">
+            {isVideoUrl(webBannerImage) ? (
+              <video
+                src={webBannerImage}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover select-none"
+              />
+            ) : (
               <img
-                src={webLogo}
-                alt="Logo Avatar"
-                className="w-20 h-20 sm:w-24 sm:h-24 bg-[#4CCD99] border-3 border-black brutal-shadow rounded-full object-cover"
+                src={webBannerImage}
+                alt="Banner YouTube Portal"
+                className="w-full h-full object-cover select-none"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.onerror = null;
-                  target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Ccircle cx=%22100%22 cy=%22100%22 r=%2290%22 fill=%22%234CCD99%22/%3E%3C/svg%3E';
+                  target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221200%22 height=%22300%22%3E%3Crect width=%221200%22 height=%22300%22 fill=%22%232E8B6E%22/%3E%3Ctext x=%22600%22 y=%22170%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22white%22%3EAXELUF PORTAL%3C/text%3E%3C/svg%3E';
                 }}
               />
+            )}
+          </div>
+          <div className={`p-4 pt-0 relative flex flex-col ${profileAlignment} gap-2`}>
+            <div className="relative -mt-10 sm:-mt-14 z-10">
+              {isVideoUrl(webLogo) ? (
+                <video
+                  src={webLogo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-20 h-20 sm:w-24 sm:h-24 bg-[#4CCD99] border-3 border-black brutal-shadow rounded-full object-cover"
+                />
+              ) : (
+                <img
+                  src={webLogo}
+                  alt="Logo Avatar"
+                  className="w-20 h-20 sm:w-24 sm:h-24 bg-[#4CCD99] border-3 border-black brutal-shadow rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Ccircle cx=%22100%22 cy=%22100%22 r=%2290%22 fill=%22%234CCD99%22/%3E%3C/svg%3E';
+                  }}
+                />
+              )}
             </div>
             <div className="w-full">
-              <h1 className="font-syne font-extrabold text-2xl sm:text-3xl tracking-tight uppercase text-black leading-none">
-                {webTitle}
-              </h1>
-              <p className="text-[10px] font-bold bg-[#4CCD99] border-2 border-black inline-block px-2.5 py-1 brutal-shadow-sm mt-1.5 rounded-lg text-black uppercase">
-                {webSubtitle}
-              </p>
+              <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-3 mt-1">
+                <div>
+                  <h1 className="font-syne font-extrabold text-2xl sm:text-3xl tracking-tight uppercase text-black leading-none">
+                    {webTitle}
+                  </h1>
+                  <p className="text-[10px] font-bold bg-[#4CCD99] border-2 border-black inline-block px-2.5 py-1 brutal-shadow-sm mt-1.5 rounded-lg text-black uppercase">
+                    {webSubtitle}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <button
+                    onClick={() => {
+                      playSynth('click');
+                      setIsSidebarOpen(true);
+                    }}
+                    className="bg-[#CCFF00] hover:bg-[#B4F000] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase shadow-sm flex items-center gap-1 active:translate-y-0.5 cursor-pointer"
+                  >
+                    <Menu className="w-3.5 h-3.5" />
+                    <span>KONTROL PANEL</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSoundEnabled(!soundEnabled);
+                      showToast(soundEnabled ? 'Suara Dinonaktifkan' : 'Suara Diaktifkan', 'info');
+                      playSynth('click');
+                    }}
+                    className={`px-2 py-1 border-2 border-black rounded-lg hover:bg-zinc-100 text-[9px] font-extrabold flex items-center gap-1 active:translate-y-0.5 cursor-pointer ${
+                      soundEnabled ? 'bg-zinc-900 text-green-400' : 'bg-white text-gray-500'
+                    }`}
+                  >
+                    {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                    <span>SUARA: {soundEnabled ? 'ON' : 'OFF'}</span>
+                  </button>
+                  {isInstallable && (
+                    <button
+                      onClick={handleInstallApp}
+                      className="bg-[#FFF200] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-yellow-400 active:translate-y-0.5 shadow-sm flex items-center gap-1 cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5 text-black" />
+                      <span>Install PWA</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

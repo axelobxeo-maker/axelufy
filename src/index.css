@@ -7,9 +7,9 @@
 }
 
 :root {
-  --bg-color: #A3FFD6;
-  --accent-color: #4CCD99;
-  --accent-dark: #2E8B6E;
+  --bg-color: #CCFF00;
+  --accent-color: #A3FF00;
+  --accent-dark: #1F4000;
   --card-bg: #FFFFFF;
   --text-color: #000000;
   --border-color: #000000;
@@ -23,9 +23,9 @@
 }
 
 [data-theme="green"] {
-  --bg-color: #A3FFD6;
-  --accent-color: #4CCD99;
-  --accent-dark: #2E8B6E;
+  --bg-color: #CCFF00;
+  --accent-color: #A3FF00;
+  --accent-dark: #1F4000;
   --card-bg: #FFFFFF;
   --text-color: #000000;
   --border-color: #000000;

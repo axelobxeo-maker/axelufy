@@ -7,6 +7,21 @@ import React, { useState } from 'react';
 import { ModItem } from '../types';
 import { Shield, Award, Flame, Star, Key, Download, Link, Eye, Heart, MessageSquare, History, QrCode, AlertTriangle, Send, Video } from 'lucide-react';
 
+const isVideoUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  const lowercase = url.toLowerCase();
+  return (
+    lowercase.endsWith('.mp4') ||
+    lowercase.endsWith('.webm') ||
+    lowercase.endsWith('.ogg') ||
+    lowercase.endsWith('.mov') ||
+    lowercase.includes('.mp4?') ||
+    lowercase.includes('.webm?') ||
+    lowercase.includes('/video/') ||
+    (lowercase.includes('imagekit.io') && lowercase.includes('.mp4'))
+  );
+};
+
 interface ModCardProps {
   mod: ModItem;
   cardIndex: number;
@@ -165,16 +180,27 @@ export default function ModCard({
         {/* Left Side: Thumbnail Panel */}
         <div className="w-full md:w-48 shrink-0 flex flex-col gap-2.5">
           <div className="brutal-border bg-zinc-100 overflow-hidden rounded-xl flex items-center justify-center relative aspect-video md:aspect-square">
-            <img
-              src={mod.image || 'https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&q=80&w=800'}
-              alt={mod.name}
-              className={`w-full h-full object-cover transition-transform duration-200 hover:scale-[1.03]`}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.onerror = null;
-                target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect width=%22400%22 height=%22400%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%22200%22 y=%22200%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22%236b7280%22%3EAPK%3C/text%3E%3C/svg%3E';
-              }}
-            />
+            {isVideoUrl(mod.image) ? (
+              <video
+                src={mod.image}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover select-none"
+              />
+            ) : (
+              <img
+                src={mod.image || 'https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&q=80&w=800'}
+                alt={mod.name}
+                className={`w-full h-full object-cover transition-transform duration-200 hover:scale-[1.03]`}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect width=%22400%22 height=%22400%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%22200%22 y=%22200%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22%236b7280%22%3EAPK%3C/text%3E%3C/svg%3E';
+                }}
+              />
+            )}
             {/* Badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
               {mod.verified && (
@@ -200,16 +226,27 @@ export default function ModCard({
             {/* Mod Icon (Di depan banner nya) */}
             {mod.iconUrl && (
               <div className="absolute bottom-2 left-2 w-12 h-12 border-2 border-black bg-white rounded-xl shadow-[2px_2px_0px_0px_#000000] overflow-hidden z-20 flex items-center justify-center animate-fade-in">
-                <img 
-                  src={mod.iconUrl} 
-                  alt={`${mod.name} Icon`} 
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null;
-                    target.style.display = 'none';
-                  }}
-                />
+                {isVideoUrl(mod.iconUrl) ? (
+                  <video
+                    src={mod.iconUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img 
+                    src={mod.iconUrl} 
+                    alt={`${mod.name} Icon`} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.style.display = 'none';
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
