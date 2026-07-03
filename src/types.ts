@@ -45,6 +45,8 @@ export interface ModItem {
   publishDate?: string; // For scheduled publish (ISO string)
   brokenReportCount?: number;
   customButtons?: Array<{ label: string; url: string; iconType: string }>;
+  videoUrl?: string;
+  iconUrl?: string;
 }
 
 export interface CreditItem {

@@ -76,6 +76,9 @@ interface AdminPanelProps {
   soundPlay: (type: 'click' | 'success' | 'delete') => void;
   isTableMissing?: boolean;
   dbWriteError?: string | null;
+  pinnedTags?: string[];
+  onSavePinnedTags?: (tags: string[]) => void;
+  onRenameCategoryGlobal?: (oldTag: string, newTag: string) => void;
 }
 
 export default function AdminPanel({
@@ -107,9 +110,12 @@ export default function AdminPanel({
   visitorData,
   soundPlay,
   isTableMissing = false,
-  dbWriteError = null
+  dbWriteError = null,
+  pinnedTags = [],
+  onSavePinnedTags = () => {},
+  onRenameCategoryGlobal = () => {}
 }: AdminPanelProps) {
-  const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics' | 'faqs' | 'polling' | 'requests'>('mod');
+  const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics' | 'faqs' | 'polling' | 'requests' | 'categories'>('mod');
 
   // Mod Form States
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -120,6 +126,8 @@ export default function AdminPanel({
   const [modPassword, setModPassword] = useState('');
   const [modImageUrl, setModImageUrl] = useState('');
   const [modImageRatio, setModImageRatio] = useState('aspect-video object-cover');
+  const [modVideoUrl, setModVideoUrl] = useState('');
+  const [modIconUrl, setModIconUrl] = useState('');
   const [modViews, setModViews] = useState<number>(0);
   const [modLikes, setModLikes] = useState<number>(0);
   const [modDownloads, setModDownloads] = useState<number>(0);
@@ -223,6 +231,8 @@ export default function AdminPanel({
     setModPassword(item.password ? decodeSafe(item.password) : '');
     setModImageUrl(item.image || '');
     setModImageRatio(item.imageRatio || 'aspect-video object-cover');
+    setModVideoUrl(item.videoUrl || '');
+    setModIconUrl(item.iconUrl || '');
     setModViews(item.views || 0);
     setModLikes(item.likes || 0);
     setModDownloads(item.downloads || 0);
@@ -248,6 +258,8 @@ export default function AdminPanel({
       password: encodeSafe(modPassword || "Tanpa Password / Langsung Ekstrak"),
       image: modImageUrl || 'https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&q=80&w=800',
       imageRatio: modImageRatio,
+      videoUrl: modVideoUrl,
+      iconUrl: modIconUrl,
       views: modViews,
       likes: modLikes,
       downloads: modDownloads,
@@ -273,6 +285,8 @@ export default function AdminPanel({
     setModPassword('');
     setModImageUrl('');
     setModImageRatio('aspect-video object-cover');
+    setModVideoUrl('');
+    setModIconUrl('');
     setModViews(0);
     setModLikes(0);
     setModDownloads(0);
@@ -593,6 +607,15 @@ export default function AdminPanel({
           <span>Kelola Request</span>
         </button>
         <button
+          onClick={() => { setActiveTab('categories'); soundPlay('click'); }}
+          className={`${
+            activeTab === 'categories' ? 'bg-black text-white' : 'bg-white text-black'
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
+        >
+          <FolderOpen className="w-3.5 h-3.5" />
+          <span>Kelola Kategori</span>
+        </button>
+        <button
           onClick={() => { setActiveTab('analytics'); soundPlay('click'); }}
           className={`${
             activeTab === 'analytics' ? 'bg-black text-white' : 'bg-white text-black'
@@ -729,7 +752,20 @@ export default function AdminPanel({
                 />
               </div>
               <div>
-                <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Rasio Gambar</label>
+                <label className="block font-bold mb-0.5 uppercase text-[#2E8B6E] text-[8px] flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Link URL Icon Mod (PNG Bulat)</span>
+                </label>
+                <input
+                  type="text"
+                  value={modIconUrl}
+                  onChange={(e) => setModIconUrl(e.target.value)}
+                  placeholder="https://i.ibb.co/... (berada di depan banner)"
+                  className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Rasio Gambar Banner</label>
                 <select
                   value={modImageRatio}
                   onChange={(e) => setModImageRatio(e.target.value)}
@@ -739,6 +775,19 @@ export default function AdminPanel({
                   <option value="aspect-square object-cover">Rasio Kotak (1:1)</option>
                   <option value="aspect-[9/16] object-cover">Rasio Vertikal (9:16)</option>
                 </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block font-bold mb-0.5 uppercase text-red-600 text-[8px] flex items-center gap-1">
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>Link Video Gameplay / Preview Youtube / MP4</span>
+                </label>
+                <input
+                  type="text"
+                  value={modVideoUrl}
+                  onChange={(e) => setModVideoUrl(e.target.value)}
+                  placeholder="Contoh: https://www.youtube.com/watch?v=... atau file mp4"
+                  className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                />
               </div>
 
               {/* Version & Changelog Config */}
@@ -2045,6 +2094,133 @@ CREATE POLICY "Allow public delete" ON public.settings FOR DELETE USING (true);`
                 </table>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB CATEGORIES CONTENT */}
+      {activeTab === 'categories' && (
+        <div className="space-y-6">
+          {/* Sub-form to manage pinned tags / categories list */}
+          <div className="bg-white border-3 border-black p-5 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black space-y-4">
+            <h3 className="font-syne font-extrabold text-sm uppercase text-[#2E8B6E] flex items-center gap-1.5">
+              <FolderOpen className="w-5 h-5" />
+              <span>KELOLA KATEGORI TERSEMAT (PINNED)</span>
+            </h3>
+            <p className="text-[10px] text-gray-500 font-bold leading-normal uppercase">
+              Kategori ini akan disematkan di menu samping (sidebar) dan diletakkan di daftar kategori populer untuk memudahkan pengunjung mengakses mod terkait.
+            </p>
+
+            {/* List of current pinned categories */}
+            <div className="flex flex-wrap gap-2 p-3 bg-zinc-50 border-2 border-black rounded-lg">
+              {pinnedTags.length === 0 ? (
+                <span className="text-[9px] text-gray-400 font-bold uppercase">Belum ada kategori yang disematkan.</span>
+              ) : (
+                pinnedTags.map((tag, idx) => (
+                  <div key={idx} className="bg-[#A3FFD6] border-2 border-black px-2.5 py-1 text-[10px] font-extrabold uppercase rounded-lg flex items-center gap-1.5 shadow-sm">
+                    <span>{tag}</span>
+                    <button
+                      onClick={() => {
+                        const nextTags = pinnedTags.filter((_, i) => i !== idx);
+                        onSavePinnedTags(nextTags);
+                      }}
+                      className="text-red-600 hover:text-red-800 font-black cursor-pointer text-xs ml-1 bg-transparent border-none outline-none"
+                      title="Lepas Sematan Kategori"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Form to add a new category pin */}
+            <div className="flex gap-2 text-black">
+              <input
+                type="text"
+                placeholder="NAMA KATEGORI BARU (Contoh: FREE FIRE)"
+                id="newCategoryInput"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const input = e.currentTarget;
+                    const val = input.value.trim().toUpperCase();
+                    if (val && !pinnedTags.includes(val)) {
+                      onSavePinnedTags([...pinnedTags, val]);
+                      input.value = '';
+                    }
+                  }
+                }}
+                className="flex-1 border-2 border-black p-2 font-bold text-xs bg-white focus:outline-none rounded-lg"
+              />
+              <button
+                onClick={() => {
+                  const input = document.getElementById('newCategoryInput') as HTMLInputElement;
+                  if (input) {
+                    const val = input.value.trim().toUpperCase();
+                    if (val && !pinnedTags.includes(val)) {
+                      onSavePinnedTags([...pinnedTags, val]);
+                      input.value = '';
+                    }
+                  }
+                }}
+                className="bg-[#4CCD99] text-black border-2 border-black hover:bg-emerald-400 font-extrabold text-[10px] uppercase px-4 py-2 rounded-lg"
+              >
+                Sematkan Kategori
+              </button>
+            </div>
+          </div>
+
+          {/* Form to globally rename/replace categories across all mods */}
+          <div className="bg-white border-3 border-black p-5 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black space-y-4">
+            <h3 className="font-syne font-extrabold text-sm uppercase text-amber-600 flex items-center gap-1.5">
+              <ArrowRightLeft className="w-5 h-5" />
+              <span>GANTI NAMA / MERGE KATEGORI GLOBAL</span>
+            </h3>
+            <p className="text-[10px] text-gray-500 font-bold leading-normal uppercase">
+              Gunakan fitur canggih ini untuk merename sebuah kategori lama ke kategori baru di SELURUH tautan modifikasi secara massal.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Nama Kategori Lama</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: MLBB"
+                  id="oldCategoryRename"
+                  className="w-full border-2 border-black p-2 font-bold text-xs bg-white focus:outline-none rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Nama Kategori Baru</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: MOBILE LEGENDS"
+                  id="newCategoryRename"
+                  className="w-full border-2 border-black p-2 font-bold text-xs bg-white focus:outline-none rounded-lg"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                const oldInput = document.getElementById('oldCategoryRename') as HTMLInputElement;
+                const newInput = document.getElementById('newCategoryRename') as HTMLInputElement;
+                if (oldInput && newInput) {
+                  const oldVal = oldInput.value.trim().toUpperCase();
+                  const newVal = newInput.value.trim().toUpperCase();
+                  if (oldVal && newVal) {
+                    if (confirm(`Apakah Anda yakin ingin mengganti kategori "${oldVal}" menjadi "${newVal}" pada seluruh data modifikasi yang ada? Tindakan ini tidak dapat dibatalkan.`)) {
+                      onRenameCategoryGlobal(oldVal, newVal);
+                      oldInput.value = '';
+                      newInput.value = '';
+                    }
+                  }
+                }
+              }}
+              className="bg-black text-white hover:bg-zinc-800 border-2 border-black font-extrabold text-[10px] uppercase py-2 px-4 rounded-lg w-full"
+            >
+              Ganti Nama Kategori di Semua Mod
+            </button>
           </div>
         </div>
       )}

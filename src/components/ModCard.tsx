@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { ModItem } from '../types';
-import { Shield, Award, Flame, Star, Key, Download, Link, Eye, Heart, MessageSquare, History, QrCode, AlertTriangle, Send } from 'lucide-react';
+import { Shield, Award, Flame, Star, Key, Download, Link, Eye, Heart, MessageSquare, History, QrCode, AlertTriangle, Send, Video } from 'lucide-react';
 
 interface ModCardProps {
   mod: ModItem;
@@ -41,6 +41,7 @@ export default function ModCard({
   const [showComments, setShowComments] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
   const [userRating, setUserRating] = useState<number>(0);
   const [selectedMirror, setSelectedMirror] = useState<string>('primary');
 
@@ -103,6 +104,28 @@ export default function ModCard({
     if (selectedMirror === 'primary') return decryptedUrl;
     const mir = mod.mirrors?.find(m => m.name === selectedMirror);
     return mir ? mir.url : decryptedUrl;
+  };
+
+  // Helper to extract YouTube video ID for clean iframe embed
+  const getYouTubeEmbedUrl = (urlStr: string): string | null => {
+    try {
+      if (!urlStr) return null;
+      let videoId = '';
+      if (urlStr.includes('youtu.be/')) {
+        videoId = urlStr.split('youtu.be/')[1].split('?')[0].split('&')[0];
+      } else if (urlStr.includes('youtube.com/watch')) {
+        const urlParams = new URLSearchParams(urlStr.split('?')[1]);
+        videoId = urlParams.get('v') || '';
+      } else if (urlStr.includes('youtube.com/embed/')) {
+        videoId = urlStr.split('youtube.com/embed/')[1].split('?')[0].split('&')[0];
+      }
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    } catch (e) {
+      console.warn("Gagal mengekstrak ID YouTube:", e);
+    }
+    return null;
   };
 
   return (
@@ -173,6 +196,22 @@ export default function ModCard({
                 </span>
               )}
             </div>
+
+            {/* Mod Icon (Di depan banner nya) */}
+            {mod.iconUrl && (
+              <div className="absolute bottom-2 left-2 w-12 h-12 border-2 border-black bg-white rounded-xl shadow-[2px_2px_0px_0px_#000000] overflow-hidden z-20 flex items-center justify-center animate-fade-in">
+                <img 
+                  src={mod.iconUrl} 
+                  alt={`${mod.name} Icon`} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Quick Rating Stars */}
@@ -339,6 +378,20 @@ export default function ModCard({
                   <Heart className="w-3 h-3 text-black fill-black" />
                   <span>{mod.likes || 0} Like</span>
                 </button>
+                {mod.videoUrl && (
+                  <button
+                    onClick={() => {
+                      soundPlay('click');
+                      setShowVideoPreview(!showVideoPreview);
+                    }}
+                    className={`px-2 py-1 border-2 border-black rounded text-black flex items-center gap-1 transition-all active:translate-y-0.5 ${
+                      showVideoPreview ? 'bg-[#FF71CD]' : 'bg-[#FFF200] hover:bg-yellow-300'
+                    }`}
+                  >
+                    <Video className="w-3 h-3 text-black" />
+                    <span>Video Preview</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setShowComments(!showComments)}
                   className="bg-zinc-100 px-2 py-1 border-2 border-black rounded text-black hover:bg-zinc-200 flex items-center gap-1"
@@ -393,6 +446,56 @@ export default function ModCard({
                 >
                   Sembunyikan QR Code
                 </button>
+              </div>
+            )}
+
+            {/* Video Preview Panel */}
+            {showVideoPreview && mod.videoUrl && (
+              <div className="p-3 bg-zinc-50 border-2 border-black rounded-xl space-y-2">
+                <h5 className="font-syne font-extrabold text-[10px] uppercase border-b-2 border-black pb-1 flex justify-between items-center">
+                  <span>Video Preview / Gameplay</span>
+                  <button onClick={() => setShowVideoPreview(false)} className="text-red-500 hover:underline text-[9px] lowercase bg-transparent border-none outline-none cursor-pointer">Tutup ✕</button>
+                </h5>
+                <div className="relative w-full border-2 border-black overflow-hidden rounded-xl bg-black aspect-video">
+                  {(() => {
+                    const embedUrl = getYouTubeEmbedUrl(mod.videoUrl);
+                    if (embedUrl) {
+                      return (
+                        <iframe
+                          src={embedUrl}
+                          title={`${mod.name} YouTube Video`}
+                          className="w-full h-full border-none"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        ></iframe>
+                      );
+                    } else if (mod.videoUrl.endsWith('.mp4') || mod.videoUrl.includes('.mp4?') || mod.videoUrl.includes('drive.google.com') || mod.videoUrl.includes('/video/')) {
+                      return (
+                        <video 
+                          src={mod.videoUrl} 
+                          controls 
+                          className="w-full h-full object-contain"
+                          referrerPolicy="no-referrer"
+                        ></video>
+                      );
+                    } else {
+                      return (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-zinc-900 text-white gap-2">
+                          <Video className="w-8 h-8 text-yellow-400 animate-pulse" />
+                          <span className="text-[10px] font-bold uppercase">Video Link Eksternal Tersedia</span>
+                          <a 
+                            href={mod.videoUrl} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="bg-[#FFF200] text-black border-2 border-black px-3 py-1 font-extrabold text-[9px] uppercase rounded-lg shadow-sm animate-bounce"
+                          >
+                            Buka Video Preview ↗
+                          </a>
+                        </div>
+                      );
+                    }
+                  })()}
+                </div>
               </div>
             )}
 

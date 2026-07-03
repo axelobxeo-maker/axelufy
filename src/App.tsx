@@ -730,6 +730,41 @@ export default function App() {
     playSynth('success');
   };
 
+  const handleSavePinnedTags = (nextTags: string[]) => {
+    setPinnedTags(nextTags);
+    writeToDB(DB_KEYS.PINNED, nextTags);
+    showToast("Kategori Berhasil Diperbarui!", "success");
+    playSynth('success');
+  };
+
+  const handleRenameCategoryGlobal = (oldTag: string, newTag: string) => {
+    const updated = mods.map(m => {
+      if (m.tag) {
+        const itemTags = m.tag.split(',').map(t => t.trim().toUpperCase());
+        const cleanedOld = oldTag.trim().toUpperCase();
+        const cleanedNew = newTag.trim().toUpperCase();
+        
+        if (itemTags.includes(cleanedOld)) {
+          const nextTags = itemTags.map(t => t === cleanedOld ? cleanedNew : t);
+          return { ...m, tag: nextTags.join(', ') };
+        }
+      }
+      return m;
+    });
+    setMods(updated);
+    writeToDB(DB_KEYS.MODS, updated);
+    
+    // Also rename in pinnedTags if present
+    if (pinnedTags.includes(oldTag.toUpperCase())) {
+      const nextPinned = pinnedTags.map(t => t.toUpperCase() === oldTag.toUpperCase() ? newTag.toUpperCase() : t);
+      setPinnedTags(nextPinned);
+      writeToDB(DB_KEYS.PINNED, nextPinned);
+    }
+
+    showToast(`Kategori ${oldTag} diubah menjadi ${newTag} di semua mod!`, "success");
+    playSynth('success');
+  };
+
   // ======================================================================
   // SEARCH TRIGGERS & VOICE INPUT
   // ======================================================================
@@ -1649,6 +1684,9 @@ export default function App() {
                   faqs={faqs}
                   polling={polling}
                   requests={requests}
+                  pinnedTags={pinnedTags}
+                  onSavePinnedTags={handleSavePinnedTags}
+                  onRenameCategoryGlobal={handleRenameCategoryGlobal}
                   onSaveMod={handleSaveModItem}
                   onDeleteMod={handleDeleteModItem}
                   onSaveBranding={handleSaveBranding}
