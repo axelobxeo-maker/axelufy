@@ -6,6 +6,46 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import {
+  Flame,
+  Award,
+  Trophy,
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  Download,
+  Info,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  Menu,
+  X,
+  Folder,
+  Home,
+  Shield,
+  LogOut,
+  LogIn,
+  Wrench,
+  Settings,
+  Search,
+  Mic,
+  Smile,
+  CheckCircle,
+  Heart,
+  MessageSquare,
+  ClipboardList,
+  QrCode,
+  Share2,
+  Trash2,
+  Save,
+  HelpCircle,
+  Plus,
+  ArrowRight,
+  Database,
+  ThumbsUp,
+  Activity,
+  UserCheck
+} from 'lucide-react';
+import {
   ModItem,
   CreditItem,
   PresetLink,
@@ -128,12 +168,12 @@ export default function App() {
 
   // Branding & Configuration
   const [webTitle, setWebTitle] = useState('AXELUF');
-  const [webSubtitle, setWebSubtitle] = useState('🔥 LINK MOD BERSIH & NO SCAM 🔥');
+  const [webSubtitle, setWebSubtitle] = useState('[ LINK MOD BERSIH & NO SCAM ]');
   const [webLogo, setWebLogo] = useState('https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&q=80&w=200');
   const [profileAlignment, setProfileAlignment] = useState('items-start text-left');
   const [webBannerImage, setWebBannerImage] = useState('https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&q=1200');
   const [webBackgroundImage, setWebBackgroundImage] = useState('none');
-  const [webBroadcastText, setWebBroadcastText] = useState('📢 DATABASE DISEGARKAN: Kami bermigrasi ke kluster server baru yang lebih stabil dan super ringan! | 🔥 UPDATE: Semua MLBB Skin Mod aktif untuk patch terbaru!');
+  const [webBroadcastText, setWebBroadcastText] = useState('DATABASE DISEGARKAN: Kami bermigrasi ke kluster server baru yang lebih stabil dan super ringan! | UPDATE: Semua MLBB Skin Mod aktif untuk patch terbaru!');
   const [safelinkTime, setSafelinkTime] = useState(5);
 
   // Search & Navigation
@@ -167,6 +207,7 @@ export default function App() {
   const [showAnnouncePopup, setShowAnnouncePopup] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isTableMissing, setIsTableMissing] = useState(false);
 
   // Polling Survey State
   const [polling, setPolling] = useState<PollingTopic>({
@@ -269,14 +310,24 @@ export default function App() {
         .eq('key', key)
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        // Handle Supabase error object
+        if (error.code === '42P01' || error.message?.includes('relation "settings" does not exist')) {
+          setIsTableMissing(true);
+        }
+        throw new Error(error.message);
+      }
       if (data && data.value !== null && data.value !== undefined) {
         localStorage.setItem(`cache_${key}`, JSON.stringify(data.value));
         return data.value;
       }
       return defaultValue;
-    } catch (err) {
+    } catch (err: any) {
       console.warn(`[Supabase Error Fallback] Mengambil cache lokal untuk key: ${key}`);
+      const errMsg = err?.message || "";
+      if (errMsg.includes('relation "settings" does not exist') || err?.code === '42P01') {
+        setIsTableMissing(true);
+      }
       const cached = localStorage.getItem(`cache_${key}`);
       if (cached) {
         try { return JSON.parse(cached); } catch { return cached; }
@@ -294,11 +345,20 @@ export default function App() {
       return;
     }
     try {
-      await supabaseClient
+      const { error } = await supabaseClient
         .from('settings')
         .upsert({ key, value }, { onConflict: 'key' });
-    } catch (err) {
+      if (error) {
+        if (error.code === '42P01' || error.message?.includes('relation "settings" does not exist')) {
+          setIsTableMissing(true);
+        }
+        throw new Error(error.message);
+      }
+    } catch (err: any) {
       console.error("Gagal sinkronisasi data cloud:", err);
+      if (err?.code === '42P01' || err?.message?.includes('relation "settings" does not exist')) {
+        setIsTableMissing(true);
+      }
     }
   };
 
@@ -342,7 +402,7 @@ export default function App() {
       // Load Title / Subtitle / Theme configs
       const title = await getFromDB("web_title", "AXELUF");
       setWebTitle(title);
-      const subtitle = await getFromDB("web_subtitle", "🔥 LINK MOD BERSIH & NO SCAM 🔥");
+      const subtitle = await getFromDB("web_subtitle", "[ LINK MOD BERSIH & NO SCAM ]");
       setWebSubtitle(subtitle);
       const logo = await getFromDB("web_logo", "https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&q=80&w=200");
       setWebLogo(logo);
@@ -610,8 +670,8 @@ export default function App() {
       localStorage.setItem('axel_tap_high', nextScore.toString());
     }
 
-    if (nextScore === 15) showToast("🔥 GOKIL! Tap brutalmu mencapai 15!", "success");
-    if (nextScore === 35) showToast("🏆 LEGENDARIS! Fans berat Axeluf!", "success");
+    if (nextScore === 15) showToast("MANTAP! Tap brutalmu mencapai 15!", "success");
+    if (nextScore === 35) showToast("LEGENDARIS! Fans berat Axeluf!", "success");
   };
 
   // ======================================================================
@@ -1164,8 +1224,8 @@ export default function App() {
       {/* BANNER RECOVERY SCREEN */}
       {isBanned && (
         <div className="fixed inset-0 bg-[#2E8B6E] z-[99999] flex flex-col items-center justify-center p-4 text-center select-none text-white">
-          <div className="border-3 border-black bg-black p-6 max-w-sm text-white rounded-2xl shadow-[8px_8px_0px_0px_#000000] transform -rotate-1">
-            <span className="text-5xl block mb-4 animate-bounce">🚨</span>
+          <div className="border-3 border-black bg-black p-6 max-w-sm text-white rounded-2xl shadow-[8px_8px_0px_0px_#000000] transform -rotate-1 flex flex-col items-center">
+            <AlertTriangle className="w-12 h-12 text-[#FF6B6B] mb-4 animate-bounce" />
             <h1 className="font-syne font-extrabold text-2xl uppercase tracking-tighter text-[#A3FFD6]">PROTEKSI KEAMANAN</h1>
             <p className="mt-2 font-bold text-xs leading-relaxed text-gray-300">
               Perilaku klik mencurigakan terdeteksi dari browser Anda demi menghindari flood/DDOS API Supabase.
@@ -1192,7 +1252,7 @@ export default function App() {
               backgroundColor: toast.type === 'success' ? '#A3FFD6' : toast.type === 'error' ? '#FF71CD' : '#FFFFFF'
             }}
           >
-            <span>{toast.type === 'success' ? '⚡' : toast.type === 'error' ? '🚨' : '💡'}</span>
+            {toast.type === 'success' ? <CheckCircle className="w-4 h-4 text-black shrink-0" /> : toast.type === 'error' ? <AlertTriangle className="w-4 h-4 text-black shrink-0" /> : <Info className="w-4 h-4 text-black shrink-0" />}
             <span className="truncate leading-tight">{toast.msg}</span>
           </div>
         </div>
@@ -1201,7 +1261,7 @@ export default function App() {
       {/* ANNOUNCEMENT POPUP ON SESSION ENTER */}
       {showAnnouncePopup && (
         <div className="fixed inset-0 bg-black/85 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white text-black border-3 border-black p-5 max-w-sm w-full text-center relative rounded-2xl shadow-[8px_8px_0_0_#000000] transform rotate-1">
+          <div className="bg-white text-black border-3 border-black p-5 max-w-sm w-full text-center relative rounded-2xl shadow-[8px_8px_0_0_#000000] transform rotate-1 flex flex-col items-center">
             <button
               onClick={() => {
                 setShowAnnouncePopup(false);
@@ -1212,13 +1272,15 @@ export default function App() {
             >
               ✕
             </button>
-            <span className="text-4xl block mb-2">📢</span>
+            <Bell className="w-10 h-10 text-black mb-2 animate-bounce" />
             <h3 className="font-syne font-extrabold text-base uppercase mb-1">MIGRASI SERVER AXELUF</h3>
             <p className="text-[10px] text-gray-500 mb-4 leading-relaxed font-semibold">
               Kabar gembira! Portal v5.3 kini didukung oleh server cluster cloud run & database Supabase hibrida super ringan dengan jaminan unduhan 10x lipat lebih cepat tanpa terputus!
             </p>
-            <div className="p-2.5 bg-[#A3FFD6]/30 border-2 border-dashed border-[#2E8B6E] rounded-lg text-[9px] font-extrabold text-[#2E8B6E] mb-4">
-              ✨ 10.000+ MOD AKTIF & SIAP PAKAI ✨
+            <div className="p-2.5 bg-[#A3FFD6]/30 border-2 border-dashed border-[#2E8B6E] rounded-lg text-[9px] font-extrabold text-[#2E8B6E] mb-4 flex items-center justify-center gap-1.5 w-full">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>10.000+ MOD AKTIF & SIAP PAKAI</span>
+              <Sparkles className="w-3.5 h-3.5" />
             </div>
             <button
               onClick={() => {
@@ -1226,9 +1288,10 @@ export default function App() {
                 sessionStorage.setItem('announcement_seen', 'true');
                 playSynth('success');
               }}
-              className="w-full bg-[#4CCD99] text-black font-extrabold py-2 border-2 border-black rounded-xl brutal-shadow-sm active:translate-y-0.5 uppercase text-xs"
+              className="w-full bg-[#4CCD99] text-black font-extrabold py-2 border-2 border-black rounded-xl brutal-shadow-sm active:translate-y-0.5 uppercase text-xs flex items-center justify-center gap-1.5"
             >
-              Mulai Eksplorasi 🚀
+              <span>Mulai Eksplorasi</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -1248,8 +1311,8 @@ export default function App() {
       {/* TOP CONFIGURATION / SOCIAL BAR */}
       <div className="bg-black text-white py-2 px-4 flex justify-between items-center text-[10px] font-extrabold border-b-2 border-black relative z-50">
         <div className="flex items-center gap-2">
-          <span className="hidden sm:inline">🚀 AXELUF V5.3 PRO ULTRA (STABLE CLUSTER)</span>
-          <span className="sm:hidden">🚀 AXELUF V5.3 PRO</span>
+          <span className="hidden sm:inline">AXELUF V5.3 PRO ULTRA (STABLE CLUSTER)</span>
+          <span className="sm:hidden">AXELUF V5.3 PRO</span>
           <span className="bg-[#4CCD99] text-black px-1.5 py-0.5 rounded font-extrabold text-[8px] border border-black animate-pulse">
             ● ONLINE: {onlineUsers} MEMBER
           </span>
@@ -1267,11 +1330,12 @@ export default function App() {
               showToast(soundEnabled ? 'Suara Dinonaktifkan' : 'Suara Diaktifkan', 'info');
               playSynth('click');
             }}
-            className={`px-2 py-0.5 border border-white rounded hover:bg-zinc-800 text-[8px] ${
+            className={`px-2 py-0.5 border border-white rounded hover:bg-zinc-800 text-[8px] flex items-center gap-1 ${
               soundEnabled ? 'bg-zinc-900 text-green-400' : 'bg-zinc-800 text-gray-500'
             }`}
           >
-            {soundEnabled ? '🔊 SUARA: ON' : '🔇 SUARA: OFF'}
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            <span>SUARA: {soundEnabled ? 'ON' : 'OFF'}</span>
           </button>
 
           {/* Theme Switcher Quick dots */}
@@ -1293,10 +1357,10 @@ export default function App() {
               playSynth('click');
               setIsSidebarOpen(!isSidebarOpen);
             }}
-            className="bg-[#A3FFD6] text-black border-3 border-black p-2.5 brutal-shadow-sm brutal-btn hover:bg-[#8AE8C0] font-extrabold text-xl flex items-center justify-center h-10 w-10 shrink-0"
+            className="bg-[#A3FFD6] text-black border-3 border-black p-2 brutal-shadow-sm brutal-btn hover:bg-[#8AE8C0] font-extrabold text-xl flex items-center justify-center h-10 w-10 shrink-0"
             title="Buka Menu Sidebar"
           >
-            ☰
+            <Menu className="w-6 h-6 text-black" />
           </button>
           <div>
             <span className="font-syne font-extrabold text-lg sm:text-xl tracking-tight uppercase block leading-none">
@@ -1312,9 +1376,10 @@ export default function App() {
           {isInstallable && (
             <button
               onClick={handleInstallApp}
-              className="bg-[#FFF200] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-yellow-400 active:translate-y-0.5 shadow-sm"
+              className="bg-[#FFF200] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-yellow-400 active:translate-y-0.5 shadow-sm flex items-center gap-1"
             >
-              📥 Install PWA App
+              <Download className="w-3.5 h-3.5 text-black" />
+              <span>Install PWA App</span>
             </button>
           )}
 
@@ -1328,9 +1393,10 @@ export default function App() {
               const el = document.getElementById(`mod-card-${randomIdx}`);
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="bg-[#FF71CD] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-pink-400 active:translate-y-0.5 shadow-sm"
+            className="bg-[#FF71CD] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-pink-400 active:translate-y-0.5 shadow-sm flex items-center gap-1"
           >
-            🎲 SURPRISE ME (RANDOM)
+            <Sparkles className="w-3.5 h-3.5 text-black" />
+            <span>SURPRISE ME</span>
           </button>
         </div>
       </nav>
@@ -1345,7 +1411,7 @@ export default function App() {
           <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white text-black z-50 border-r-4 border-black shadow-[6px_0_0_0_#000000] flex flex-col rounded-tr-2xl rounded-br-2xl overflow-hidden">
             <div className="p-4 bg-[#A3FFD6] border-b-3 border-black flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2 font-bold text-black text-sm">
-                <span>📂</span>
+                <Folder className="w-5 h-5 text-black" />
                 <h2 className="font-syne font-extrabold text-base uppercase tracking-tight">KONTROL PANEL PORTAL</h2>
               </div>
               <button
@@ -1370,7 +1436,10 @@ export default function App() {
                   }}
                   className="w-full text-left p-2.5 bg-zinc-50 hover:bg-[#A3FFD6] border-2 border-black brutal-shadow-sm text-[11px] uppercase flex items-center justify-between text-black rounded-lg"
                 >
-                  <span>🏠 BERANDA / SEMUA MOD</span>
+                  <div className="flex items-center gap-1.5">
+                    <Home className="w-4 h-4 text-black" />
+                    <span>BERANDA / SEMUA MOD</span>
+                  </div>
                   <span className="bg-black text-white px-2 py-0.5 text-[9px] border-2 border-black">
                     {mods.length}
                   </span>
@@ -1387,14 +1456,18 @@ export default function App() {
                     }}
                     className="w-full text-left p-2.5 bg-yellow-50 hover:bg-yellow-100 border-2 border-black brutal-shadow-sm text-[11px] uppercase flex items-center justify-between text-yellow-800 rounded-lg"
                   >
-                    <span>⭐ BOOKMARK ANDA ({favorites.length})</span>
+                    <div className="flex items-center gap-1.5">
+                      <Trophy className="w-4 h-4 text-yellow-600 animate-bounce" />
+                      <span>BOOKMARK ANDA ({favorites.length})</span>
+                    </div>
                   </button>
                 )}
 
                 {/* Pinned categories list */}
                 <div className="border-t-2 border-dashed border-black pt-3">
-                  <h3 className="text-[10px] text-[#2E8B6E] uppercase tracking-wider mb-2 flex items-center gap-1">
-                    📌 PINNED CATEGORIES
+                  <h3 className="text-[10px] text-[#2E8B6E] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5 text-[#2E8B6E]" />
+                    <span>PINNED CATEGORIES</span>
                   </h3>
                   <div className="flex flex-col gap-1.5">
                     {pinnedTags.map((tag, idx) => {
@@ -1409,7 +1482,10 @@ export default function App() {
                           }}
                           className="w-full flex items-center justify-between gap-1 bg-[#A3FFD6] hover:bg-[#8AE8C0] border-2 border-black p-2 text-[10px] brutal-shadow-sm rounded-lg text-black"
                         >
-                          <span className="uppercase">📌 {tag}</span>
+                          <span className="uppercase flex items-center gap-1.5">
+                            <Award className="w-3 h-3 text-black" />
+                            <span>{tag}</span>
+                          </span>
                           <span className="bg-[#2E8B6E] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
                             {count}
                           </span>
@@ -1421,7 +1497,10 @@ export default function App() {
 
                 {/* All computed tags categories list */}
                 <div className="border-t-2 border-dashed border-black pt-3">
-                  <h3 className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">🔥 SEMUA KATEGORI</h3>
+                  <h3 className="text-[10px] text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-gray-500" />
+                    <span>SEMUA KATEGORI</span>
+                  </h3>
                   <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
                     {getUniqueTags().map((tag, idx) => {
                       if (pinnedTags.includes(tag)) return null;
@@ -1448,7 +1527,10 @@ export default function App() {
 
                 {/* Theme Layout Live Customizer */}
                 <div className="border-t-2 border-dashed border-black pt-3.5 bg-zinc-50 p-3 rounded-xl border-2 border-black">
-                  <h4 className="text-[10px] uppercase font-extrabold mb-2 text-black">🎨 CUSTOMIZER TEMA</h4>
+                  <h4 className="text-[10px] uppercase font-extrabold mb-2 text-black flex items-center gap-1.5">
+                    <Wrench className="w-3.5 h-3.5" />
+                    <span>CUSTOMIZER TEMA</span>
+                  </h4>
                   <div className="space-y-2 text-[9px]">
                     <div>
                       <span className="block font-bold text-gray-500 uppercase mb-1">Sudut Kelengkungan (Border Radius)</span>
@@ -1486,17 +1568,21 @@ export default function App() {
                 </div>
 
                 {/* Easter Egg Click Game */}
-                <div className="border-t-2 border-dashed border-black pt-3 bg-zinc-50 p-2.5 border border-black rounded-lg text-center">
-                  <h4 className="text-[10px] text-black font-extrabold uppercase mb-1">🎮 MINI GAME TAP BRUTAL</h4>
+                <div className="border-t-2 border-dashed border-black pt-3 bg-zinc-50 p-2.5 border border-black rounded-lg text-center flex flex-col items-center">
+                  <h4 className="text-[10px] text-black font-extrabold uppercase mb-1 flex items-center gap-1.5 justify-center">
+                    <Activity className="w-3.5 h-3.5 text-black" />
+                    <span>MINI GAME TAP BRUTAL</span>
+                  </h4>
                   <div className="flex justify-between items-center bg-white p-1.5 border border-black rounded mb-2 text-[9px]">
                     <span>Skor: <span className="font-extrabold text-[#2E8B6E]">{easterEggScore}</span></span>
                     <span>High Score: <span className="text-pink-500">{easterEggHigh}</span></span>
                   </div>
                   <button
                     onClick={handleEasterEggTap}
-                    className="w-full bg-[#FF71CD] hover:bg-[#ff55c1] text-black font-extrabold py-1.5 border border-black rounded-lg brutal-shadow-sm text-[9px] uppercase"
+                    className="w-full bg-[#FF71CD] hover:bg-[#ff55c1] text-black font-extrabold py-1.5 border border-black rounded-lg brutal-shadow-sm text-[9px] uppercase flex items-center justify-center gap-1.5"
                   >
-                    TAP DISINI! 🚀
+                    <span>TAP DISINI!</span>
+                    <Sparkles className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -1510,18 +1596,20 @@ export default function App() {
                         setIsSidebarOpen(false);
                         playSynth('click');
                       }}
-                      className="w-full bg-[#A3FFD6] text-black font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs"
+                      className="w-full bg-[#A3FFD6] text-black font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs flex items-center justify-center gap-1.5"
                     >
-                      🛠️ KELOLA PORTAL (ADMIN)
+                      <Wrench className="w-4 h-4" />
+                      <span>KELOLA PORTAL (ADMIN)</span>
                     </button>
                     <button
                       onClick={() => {
                         handleLogout();
                         setIsSidebarOpen(false);
                       }}
-                      className="w-full bg-black text-white font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs"
+                      className="w-full bg-black text-white font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs flex items-center justify-center gap-1.5"
                     >
-                      🚪 KELUAR SESI ADMIN
+                      <LogOut className="w-4 h-4" />
+                      <span>KELUAR SESI ADMIN</span>
                     </button>
                   </div>
                 ) : null}
@@ -1576,7 +1664,7 @@ export default function App() {
           <div className="bg-white border-3 border-black p-6 rounded-2xl brutal-shadow my-6 text-black">
             <div className="flex justify-between items-center border-b-3 border-black pb-4 mb-6">
               <div className="flex items-center gap-2">
-                <span className="text-3xl">🔐</span>
+                <Shield className="w-8 h-8 text-[#4CCD99]" />
                 <div>
                   <h2 className="font-syne font-extrabold text-xl uppercase leading-none text-black">LOGY PANEL</h2>
                   <p className="text-[9px] font-mono text-gray-400 mt-1 uppercase">SUPABASE SECURE BACKEND AUTH</p>
@@ -1597,14 +1685,18 @@ export default function App() {
               <div className="space-y-6">
                 <div className="bg-[#A3FFD6]/40 border-2 border-dashed border-[#2E8B6E] p-4 rounded-xl flex items-center justify-between text-black">
                   <div className="text-xs">
-                    <p className="font-extrabold text-[#2E8B6E] uppercase">🔑 AKSES TERVERIFIKASI</p>
+                    <p className="font-extrabold text-[#2E8B6E] uppercase flex items-center gap-1">
+                      <UserCheck className="w-3.5 h-3.5" />
+                      <span>AKSES TERVERIFIKASI</span>
+                    </p>
                     <p className="font-mono text-gray-600 mt-0.5">{session?.user?.email}</p>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="bg-black text-[#A3FFD6] hover:bg-zinc-800 font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl border-2 border-black shadow-sm cursor-pointer"
+                    className="bg-black text-[#A3FFD6] hover:bg-zinc-800 font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl border-2 border-black shadow-sm cursor-pointer flex items-center gap-1.5"
                   >
-                    🚪 Keluar Sesi
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Keluar Sesi</span>
                   </button>
                 </div>
 
@@ -1636,12 +1728,16 @@ export default function App() {
                   onDeleteRequest={handleDeleteRequest}
                   visitorData={STATIC_VISITOR_STATS}
                   soundPlay={soundPlay}
+                  isTableMissing={isTableMissing}
                 />
               </div>
             ) : (
               <div className="max-w-sm mx-auto my-8">
                 <div className="bg-[#FFF200]/10 border-2 border-dashed border-black p-3.5 rounded-xl mb-6 text-center text-black">
-                  <span className="text-sm font-bold block">⚠️ DILINDUNGI SISTEM KEAMANAN</span>
+                  <span className="text-sm font-bold flex items-center justify-center gap-1.5">
+                    <Shield className="w-4 h-4 text-amber-500" />
+                    <span>DILINDUNGI SISTEM KEAMANAN</span>
+                  </span>
                   <span className="text-[9px] text-gray-500 font-medium block mt-0.5">Silakan masuk menggunakan kredensial database Supabase Anda untuk mengakses panel administrasi.</span>
                 </div>
 
@@ -1686,23 +1782,26 @@ export default function App() {
                   <button
                     onClick={handleAuthAction}
                     disabled={authLoading}
-                    className="w-full bg-[#4CCD99] text-black border-2 border-black font-extrabold py-3 rounded-xl brutal-shadow-sm hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_#000000] active:translate-y-1 transition-all text-xs uppercase disabled:opacity-50 cursor-pointer"
+                    className="w-full bg-[#4CCD99] text-black border-2 border-black font-extrabold py-3 rounded-xl brutal-shadow-sm hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_#000000] active:translate-y-1 transition-all text-xs uppercase disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    {authLoading ? 'MEMPROSES...' : authMode === 'login' ? 'MASUK KE DASHBOARD 🚀' : 'DAFTAR AKUN ADMIN ➕'}
+                    <span>{authLoading ? 'MEMPROSES...' : authMode === 'login' ? 'MASUK KE DASHBOARD' : 'DAFTAR AKUN ADMIN'}</span>
+                    {!authLoading && (authMode === 'login' ? <ArrowRight className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
                   </button>
                 </div>
               </div>
             )}
           </div>
         ) : maintenanceMode && !isAdminMode ? (
-          <div className="bg-white border-3 border-black p-8 text-center rounded-2xl brutal-shadow my-12 text-black">
-            <span className="text-6xl block mb-4 animate-bounce">🚧</span>
+          <div className="bg-white border-3 border-black p-8 text-center rounded-2xl brutal-shadow my-12 text-black flex flex-col items-center">
+            <Wrench className="w-16 h-16 text-amber-500 mb-4 animate-bounce" />
             <h2 className="font-syne font-extrabold text-2xl uppercase">MODE PEMELIHARAAN AKTIF</h2>
             <p className="text-xs text-gray-500 font-bold mt-2 max-w-md mx-auto leading-relaxed">
               Halo teman-teman! Portal Axeluf sedang dalam proses peningkatan database berkala. Silakan kembali dalam beberapa saat lagi ya!
             </p>
-            <div className="mt-6 p-3 bg-[#FFF200]/10 border-2 border-dashed border-black inline-block text-[10px] font-extrabold rounded-lg">
-              ✨ KEMBALI SEGERA DENGAN FITUR BARU ✨
+            <div className="mt-6 p-3 bg-[#FFF200]/10 border-2 border-dashed border-black rounded-lg text-[10px] font-extrabold flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>KEMBALI SEGERA DENGAN FITUR BARU</span>
+              <Sparkles className="w-4 h-4" />
             </div>
           </div>
         ) : (
@@ -1713,7 +1812,7 @@ export default function App() {
               {activeCategoryFilter && (
                 <div className="bg-black text-white p-3.5 brutal-border brutal-shadow-sm flex items-center justify-between rounded-xl">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">🏷️</span>
+                    <Folder className="w-4 h-4 text-[#A3FFD6]" />
                     <span className="font-extrabold text-xs uppercase text-white">
                       MENYARING KATEGORI:{' '}
                       <span className="text-[#A3FFD6] underline decoration-wavy pl-1">
@@ -1736,8 +1835,8 @@ export default function App() {
               {/* LIVE SEARCH & POPULAR SEARCH bento box */}
               <div className="bg-white border-3 border-black p-4 rounded-2xl brutal-shadow text-black space-y-3">
                 {/* Custom input bar */}
-                <div className="flex items-center border-3 border-black p-0.5 rounded-xl bg-zinc-50 shadow-sm relative">
-                  <span className="px-3 text-base">🔍</span>
+                <div className="flex items-center border-3 border-black p-0.5 rounded-xl bg-zinc-50 shadow-sm relative text-black">
+                  <Search className="w-4 h-4 text-black mx-3 shrink-0" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -1749,12 +1848,13 @@ export default function App() {
                   {/* Voice recognition trigger */}
                   <button
                     onClick={handleVoiceSearch}
-                    className={`mr-2 p-1.5 rounded-lg border-2 border-black font-extrabold transition-all text-[11px] ${
+                    className={`mr-2 p-1.5 rounded-lg border-2 border-black font-extrabold transition-all text-[11px] flex items-center gap-1 ${
                       voiceSearchActive ? 'bg-red-500 text-white animate-pulse' : 'bg-[#A3FFD6] hover:bg-[#4CCD99] text-black'
                     }`}
                     title="Pencarian Suara"
                   >
-                    🎤 {voiceSearchActive ? 'LISTEN' : 'MIC'}
+                    <Mic className="w-3.5 h-3.5" />
+                    <span>{voiceSearchActive ? 'LISTEN' : 'MIC'}</span>
                   </button>
                 </div>
 
@@ -1770,9 +1870,10 @@ export default function App() {
                           setSearchSuggestions([]);
                           playSynth('click');
                         }}
-                        className="block w-full text-left p-1 rounded hover:bg-[#A3FFD6]/30 text-black uppercase"
+                        className="w-full text-left p-1 rounded hover:bg-[#A3FFD6]/30 text-black uppercase flex items-center gap-1.5"
                       >
-                        ⚡ {sug}
+                        <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>{sug}</span>
                       </button>
                     ))}
                   </div>
@@ -1824,7 +1925,7 @@ export default function App() {
 
               {/* Informative notification bento block */}
               <div className="bg-[#4CCD99] border-3 border-black brutal-shadow-sm p-3.5 font-extrabold flex gap-3 items-center rounded-2xl">
-                <span className="text-2xl shrink-0 animate-bounce">🔔</span>
+                <Bell className="w-6 h-6 text-black shrink-0 animate-bounce" />
                 <p className="text-[10px] sm:text-xs text-black leading-snug">
                   Ada kendala link error, tautan mati, atau terdeteksi password salah? Hubungi tim support kami segera dengan memberikan laporan kerusakan pada tombol 'Lapor Mati' di tiap mod!
                 </p>
@@ -1834,8 +1935,8 @@ export default function App() {
               <div className="space-y-6">
                 {getVisibleMods().length === 0 ? (
                   /* Empty state view */
-                  <div className="bg-white text-black border-3 border-black brutal-shadow p-8 text-center font-bold rounded-2xl">
-                    <span className="text-5xl block mb-2">🏜️</span>
+                  <div className="bg-white text-black border-3 border-black brutal-shadow p-8 text-center font-bold rounded-2xl flex flex-col items-center">
+                    <Activity className="w-12 h-12 text-gray-400 mb-2 animate-pulse" />
                     <h4 className="font-syne font-extrabold text-sm uppercase">Mod Tidak Ditemukan!</h4>
                     <p className="text-[10px] text-gray-400 font-normal mt-1 leading-normal">
                       Cobalah mengetikkan kata kunci lain, bersihkan filter pencarian, atau sampaikan usulan request mod di bagian bawah halaman agar segera ditambahkan.
@@ -1906,7 +2007,7 @@ export default function App() {
                 style={{ backgroundColor: c.color }}
                 className="px-3.5 py-1.5 border-2 border-black brutal-shadow-sm brutal-btn-sm flex items-center gap-1.5 text-[10px] uppercase text-black font-extrabold rounded-lg"
               >
-                <span>🔗</span>
+                <Share2 className="w-3.5 h-3.5 text-black" />
                 <span>{c.platform}:</span>
                 <span className="font-black underline">{c.handle}</span>
               </a>
@@ -1925,8 +2026,8 @@ export default function App() {
       {/* SAFELINK TIMER MODAL OVERLAY */}
       {safelinkOverlayOpen && (
         <div className="fixed inset-0 bg-black/90 z-[99999] flex items-center justify-center p-4">
-          <div className="bg-white text-black border-3 border-black p-6 max-w-sm w-full text-center rounded-2xl shadow-[6px_6px_0_0_#000000] transform rotate-1">
-            <span className="text-4xl block mb-2 animate-bounce">⏳</span>
+          <div className="bg-white text-black border-3 border-black p-6 max-w-sm w-full text-center rounded-2xl shadow-[6px_6px_0_0_#000000] transform rotate-1 flex flex-col items-center">
+            <Activity className="w-10 h-10 text-black mb-2 animate-spin" />
             <h3 className="font-syne font-extrabold text-base uppercase mb-1 text-black">
               MEMPROSES ENKRIPSI LINK
             </h3>
@@ -1945,9 +2046,10 @@ export default function App() {
               <button
                 onClick={handleSafelinkRedirect}
                 disabled={safelinkCountdown > 0}
-                className="w-full bg-[#4CCD99] text-black border-2 border-black font-extrabold py-2.5 rounded-xl brutal-shadow-sm brutal-btn text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#4CCD99] text-black border-2 border-black font-extrabold py-2.5 rounded-xl brutal-shadow-sm brutal-btn text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
               >
-                {safelinkCountdown > 0 ? 'MEMVERIFIKASI TAUTAN...' : 'LANJUTKAN UNDUH 📥'}
+                <span>{safelinkCountdown > 0 ? 'MEMVERIFIKASI TAUTAN...' : 'LANJUTKAN UNDUH'}</span>
+                {safelinkCountdown === 0 && <Download className="w-4 h-4 text-black animate-bounce" />}
               </button>
 
               <button

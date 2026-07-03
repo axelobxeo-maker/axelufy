@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { ModItem } from '../types';
+import { Shield, Award, Flame, Star, Key, Download, Link, Eye, Heart, MessageSquare, History, QrCode, AlertTriangle, Send } from 'lucide-react';
 
 interface ModCardProps {
   mod: ModItem;
@@ -139,24 +140,27 @@ export default function ModCard({
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.onerror = null;
-                target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect width=%22400%22 height=%22400%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%22200%22 y=%22200%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22%236b7280%22%3E📱 APK%3C/text%3E%3C/svg%3E';
+                target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect width=%22400%22 height=%22400%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%22200%22 y=%22200%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22%236b7280%22%3EAPK%3C/text%3E%3C/svg%3E';
               }}
             />
             {/* Badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
               {mod.verified && (
                 <span className="bg-emerald-500 text-black border-2 border-black font-extrabold text-[8px] uppercase px-1.5 py-0.5 rounded-full brutal-shadow-sm flex items-center gap-0.5">
-                  🛡️ VERIFIED
+                  <Shield className="w-2.5 h-2.5 text-black" />
+                  <span>VERIFIED</span>
                 </span>
               )}
               {mod.premium && (
                 <span className="bg-[#FFF200] text-black border-2 border-black font-extrabold text-[8px] uppercase px-1.5 py-0.5 rounded-full brutal-shadow-sm flex items-center gap-0.5">
-                  👑 PREMIUM
+                  <Award className="w-2.5 h-2.5 text-black" />
+                  <span>PREMIUM</span>
                 </span>
               )}
               {mod.exclusive && (
                 <span className="bg-[#FF71CD] text-black border-2 border-black font-extrabold text-[8px] uppercase px-1.5 py-0.5 rounded-full brutal-shadow-sm flex items-center gap-0.5">
-                  🔥 EXCLUSIVE
+                  <Flame className="w-2.5 h-2.5 text-black" />
+                  <span>EXCLUSIVE</span>
                 </span>
               )}
             </div>
@@ -171,15 +175,16 @@ export default function ModCard({
                   key={star}
                   onClick={() => handleRatingSubmit(star)}
                   className={`text-sm transition-transform hover:scale-125 ${
-                    star <= (userRating || mod.rating || 5) ? 'text-yellow-400' : 'text-gray-300'
+                    star <= (userRating || mod.rating || 5) ? 'text-yellow-400 font-extrabold' : 'text-gray-300'
                   }`}
                 >
                   ★
                 </button>
               ))}
             </div>
-            <span className="text-[8px] font-extrabold text-gray-400 block mt-1">
-              ⭐ {mod.rating?.toFixed(1) || '5.0'} / 5.0 ({mod.ratingsCount || 1} Rating)
+            <span className="text-[8px] font-extrabold text-gray-400 flex items-center justify-center gap-0.5 mt-1">
+              <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+              <span>{mod.rating?.toFixed(1) || '5.0'} / 5.0 ({mod.ratingsCount || 1} Rating)</span>
             </span>
           </div>
         </div>
@@ -232,7 +237,7 @@ export default function ModCard({
                     selectedMirror === 'primary' ? 'bg-[#4CCD99]' : 'bg-white text-zinc-600'
                   }`}
                 >
-                  ⚡ UTAMA (UNLIMITED)
+                  UTAMA (UNLIMITED)
                 </button>
                 {mod.mirrors.map((mir, idx) => (
                   <button
@@ -245,7 +250,7 @@ export default function ModCard({
                       selectedMirror === mir.name ? 'bg-[#FF71CD]' : 'bg-white text-zinc-600'
                     }`}
                   >
-                    🚀 MIRROR: {mir.name.toUpperCase()}
+                    MIRROR: {mir.name.toUpperCase()}
                   </button>
                 ))}
               </div>
@@ -253,12 +258,15 @@ export default function ModCard({
 
             {/* Password Indicator */}
             <div className="bg-zinc-50 border-2 border-black p-2 flex justify-between items-center text-[10px] font-bold rounded-lg relative overflow-hidden">
-              <span className="truncate pr-2">🔑 PASSWORD: {decryptedPassword}</span>
+              <span className="truncate pr-2 flex items-center gap-1">
+                <Key className="w-3.5 h-3.5 text-[#2E8B6E]" />
+                <span>PASSWORD: {decryptedPassword}</span>
+              </span>
               <button
                 onClick={handleCopyPassword}
                 className="bg-[#FFF200] border-2 border-black px-2 py-1 text-[8px] font-extrabold uppercase hover:bg-yellow-300 rounded shrink-0 brutal-shadow-sm active:translate-y-0.5"
               >
-                {copiedPassword ? 'Tersalin! ✔️' : 'Salin Password'}
+                {copiedPassword ? 'Tersalin!' : 'Salin Password'}
               </button>
             </div>
 
@@ -268,7 +276,8 @@ export default function ModCard({
                 onClick={() => triggerSafelink(cardIndex, getActiveDownloadUrl(), true)}
                 className="flex-1 text-center bg-[#4CCD99] text-black font-extrabold text-[10px] uppercase py-2.5 px-3 border-3 border-black brutal-shadow-sm brutal-btn flex items-center justify-center gap-2 rounded-xl"
               >
-                📥 DOWNLOAD NOW ({selectedMirror === 'primary' ? 'SPEED' : selectedMirror.toUpperCase()})
+                <Download className="w-4 h-4 text-black animate-bounce" />
+                <span>DOWNLOAD NOW ({selectedMirror === 'primary' ? 'SPEED' : selectedMirror.toUpperCase()})</span>
               </button>
 
               {mod.customButtons &&
@@ -278,7 +287,8 @@ export default function ModCard({
                     onClick={() => triggerSafelink(cardIndex, btn.url, false)}
                     className="bg-black text-white font-bold text-[10px] uppercase py-2 px-3.5 border-3 border-black brutal-shadow-sm brutal-btn flex items-center justify-center gap-1.5 rounded-xl"
                   >
-                    <span>🔗 {btn.label}</span>
+                    <Link className="w-3.5 h-3.5 text-white" />
+                    <span>{btn.label}</span>
                   </button>
                 ))}
             </div>
@@ -286,9 +296,15 @@ export default function ModCard({
             {/* Sub-Actions (Rating, Share, Broken Link, QR Code, Version History) */}
             <div className="border-t border-dashed border-black pt-2.5 flex flex-wrap justify-between items-center text-[9px] font-bold text-gray-500 gap-2">
               <div className="flex items-center gap-2">
-                <span>👁️ {mod.views || 0} dilihat</span>
+                <span className="flex items-center gap-1 font-mono">
+                  <Eye className="w-3.5 h-3.5 text-gray-400" />
+                  <span>{mod.views || 0} VIEWS</span>
+                </span>
                 <span>•</span>
-                <span>📥 {mod.downloads || 0} diunduh</span>
+                <span className="flex items-center gap-1 font-mono">
+                  <Download className="w-3.5 h-3.5 text-gray-400" />
+                  <span>{mod.downloads || 0} DOWNLOADS</span>
+                </span>
               </div>
 
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -297,38 +313,43 @@ export default function ModCard({
                     soundPlay('success');
                     onLike(cardIndex);
                   }}
-                  className="bg-[#A3FFD6] px-2 py-1 border-2 border-black rounded text-black hover:bg-[#4CCD99] active:translate-y-0.5"
+                  className="bg-[#A3FFD6] px-2 py-1 border-2 border-black rounded text-black hover:bg-[#4CCD99] active:translate-y-0.5 flex items-center gap-1"
                 >
-                  ❤️ {mod.likes || 0} Like
+                  <Heart className="w-3 h-3 text-black fill-black" />
+                  <span>{mod.likes || 0} Like</span>
                 </button>
                 <button
                   onClick={() => setShowComments(!showComments)}
-                  className="bg-zinc-100 px-2 py-1 border-2 border-black rounded text-black hover:bg-zinc-200"
+                  className="bg-zinc-100 px-2 py-1 border-2 border-black rounded text-black hover:bg-zinc-200 flex items-center gap-1"
                 >
-                  💬 Diskusi ({mod.comments?.length || 0})
+                  <MessageSquare className="w-3 h-3 text-black" />
+                  <span>Diskusi ({mod.comments?.length || 0})</span>
                 </button>
                 <button
                   onClick={() => setShowChangelog(!showChangelog)}
-                  className="bg-zinc-100 px-2 py-1 border-2 border-black rounded text-black hover:bg-zinc-200"
+                  className="bg-zinc-100 px-2 py-1 border-2 border-black rounded text-black hover:bg-zinc-200 flex items-center gap-1"
                 >
-                  📋 Riwayat Versi
+                  <History className="w-3 h-3 text-black" />
+                  <span>Riwayat Versi</span>
                 </button>
                 <button
                   onClick={() => setShowQRCode(!showQRCode)}
-                  className="bg-zinc-100 px-2 py-1 border-2 border-black rounded text-black hover:bg-zinc-200"
+                  className="bg-zinc-100 px-2 py-1 border-2 border-black rounded text-black hover:bg-zinc-200 flex items-center gap-1"
                   title="Unduh dengan Kode QR"
                 >
-                  📱 QR
+                  <QrCode className="w-3 h-3 text-black" />
+                  <span>QR</span>
                 </button>
                 <button
                   onClick={() => {
                     soundPlay('success');
                     onReportBroken(cardIndex);
                   }}
-                  className="bg-red-50 text-red-600 px-2 py-1 border-2 border-black rounded hover:bg-red-100"
+                  className="bg-red-50 text-red-600 px-2 py-1 border-2 border-black rounded hover:bg-red-100 flex items-center gap-1"
                   title="Laporkan link rusak atau mati"
                 >
-                  ⚠️ Lapor Mati ({(mod.brokenReportCount || 0)})
+                  <AlertTriangle className="w-3 h-3 text-red-600" />
+                  <span>Lapor Mati ({(mod.brokenReportCount || 0)})</span>
                 </button>
               </div>
             </div>
@@ -489,9 +510,10 @@ export default function ModCard({
                   </div>
                   <button
                     type="submit"
-                    className="bg-[#2E8B6E] text-white text-[9px] font-extrabold px-3 py-1.5 border-2 border-black brutal-shadow-sm brutal-btn-sm rounded uppercase active:translate-y-0.5"
+                    className="bg-[#2E8B6E] text-white text-[9px] font-extrabold px-3 py-1.5 border-2 border-black brutal-shadow-sm brutal-btn-sm rounded uppercase active:translate-y-0.5 flex items-center justify-center gap-1"
                   >
-                    Kirim Komentar ⚡
+                    <Send className="w-3 h-3 text-white" />
+                    <span>Kirim Komentar</span>
                   </button>
                 </form>
               </div>

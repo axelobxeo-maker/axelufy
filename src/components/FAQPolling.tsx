@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { FAQItem, PollingTopic, RequestMod } from '../types';
+import { BarChart2, HelpCircle, Plus, Minus, Send, Flame, CheckCircle2, ThumbsUp, Lock } from 'lucide-react';
 
 interface FAQPollingProps {
   faqs: FAQItem[];
@@ -45,9 +46,9 @@ export default function FAQPolling({
         {/* Polling Widget */}
         <div className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000] flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className="text-lg">📊</span>
-              <h4 className="font-syne font-extrabold text-sm uppercase">Polling Komunitas</h4>
+            <div className="flex items-center gap-1.5 mb-2 text-[#2E8B6E]">
+              <BarChart2 className="w-5 h-5 text-black" />
+              <h4 className="font-syne font-extrabold text-sm uppercase text-black">Polling Komunitas</h4>
             </div>
             <p className="text-[11px] font-bold text-[#2E8B6E] bg-[#A3FFD6]/30 px-2 py-1 border-2 border-black inline-block rounded-md mb-4 uppercase">
               {polling.question}
@@ -78,15 +79,16 @@ export default function FAQPolling({
               })}
             </div>
           </div>
-          <div className="text-[9px] text-gray-500 font-bold mt-4 text-center">
-            🔒 Total polling terdaftar: {polling.totalVotes} Suara • Klik pilihan untuk memilih!
+          <div className="text-[9px] text-gray-500 font-bold mt-4 flex items-center justify-center gap-1">
+            <Lock className="w-3 h-3 text-gray-400" />
+            <span>Total polling terdaftar: {polling.totalVotes} Suara • Klik pilihan untuk memilih!</span>
           </div>
         </div>
 
         {/* FAQ Widget */}
         <div className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000]">
           <div className="flex items-center gap-1.5 mb-3">
-            <span className="text-lg">❓</span>
+            <HelpCircle className="w-5 h-5 text-black" />
             <h4 className="font-syne font-extrabold text-sm uppercase">FAQ (Tanya Jawab)</h4>
           </div>
           <p className="text-[10px] text-gray-500 font-bold mb-4">Informasi lengkap panduan instalasi game modifikasi.</p>
@@ -101,7 +103,9 @@ export default function FAQPolling({
                     className="w-full text-left p-2.5 bg-zinc-50 font-extrabold text-[10px] uppercase flex justify-between items-center transition-all hover:bg-gray-100"
                   >
                     <span className="pr-4 leading-tight">{faq.question}</span>
-                    <span className="shrink-0 text-xs">{isOpen ? '➖' : '➕'}</span>
+                    <span className="shrink-0 text-xs">
+                      {isOpen ? <Minus className="w-3.5 h-3.5 text-black" /> : <Plus className="w-3.5 h-3.5 text-black" />}
+                    </span>
                   </button>
                   {isOpen && (
                     <div className="p-2.5 bg-white border-t-2 border-black text-[10px] text-gray-700 leading-relaxed font-semibold whitespace-pre-wrap">
@@ -121,7 +125,7 @@ export default function FAQPolling({
           {/* Submit Request Form */}
           <div className="md:col-span-1 space-y-3">
             <div className="flex items-center gap-1.5">
-              <span className="text-lg">📢</span>
+              <Send className="w-5 h-5 text-black" />
               <h4 className="font-syne font-extrabold text-sm uppercase">Request Modifikasi</h4>
             </div>
             <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
@@ -154,7 +158,7 @@ export default function FAQPolling({
                 type="submit"
                 className="w-full bg-[#FF71CD] text-black font-extrabold uppercase py-2 brutal-border-sm brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg"
               >
-                Kirim Permintaan ⚡
+                Kirim Permintaan
               </button>
             </form>
           </div>
@@ -162,7 +166,10 @@ export default function FAQPolling({
           {/* Request Mod list */}
           <div className="md:col-span-2 flex flex-col justify-between">
             <div>
-              <h5 className="font-syne font-extrabold text-xs uppercase mb-3 text-[#2E8B6E]">🔥 Permintaan Terpopuler</h5>
+              <h5 className="font-syne font-extrabold text-xs uppercase mb-3 text-[#2E8B6E] flex items-center gap-1.5">
+                <Flame className="w-4 h-4 text-[#2E8B6E]" />
+                <span>Permintaan Terpopuler</span>
+              </h5>
               <div className="max-h-48 overflow-y-auto space-y-2 border-2 border-black p-2 rounded-xl bg-zinc-50">
                 {requests.length === 0 ? (
                   <p className="text-[10px] italic text-gray-400 text-center py-4">Belum ada usulan mod.</p>
@@ -181,8 +188,9 @@ export default function FAQPolling({
                               {req.category}
                             </span>
                             {req.status === 'approved' && (
-                              <span className="bg-emerald-100 text-emerald-800 px-1 py-0.5 text-[8px] border border-emerald-400 rounded font-bold uppercase">
-                                Rilis ✔️
+                              <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 text-[8px] border border-emerald-400 rounded font-bold uppercase flex items-center gap-0.5">
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-800" />
+                                <span>Rilis</span>
                               </span>
                             )}
                           </div>
@@ -192,7 +200,9 @@ export default function FAQPolling({
                           onClick={() => onUpvoteRequest(req.id)}
                           className="bg-[#A3FFD6] hover:bg-[#4CCD99] text-black font-extrabold px-2 py-1 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] uppercase flex items-center gap-1 rounded-md shrink-0 active:translate-y-0.5"
                         >
-                          👍 Upvote <span className="bg-black text-white px-1 brutal-border-sm text-[8px]">{req.votes}</span>
+                          <ThumbsUp className="w-3 h-3 text-black" />
+                          <span>Upvote</span>
+                          <span className="bg-black text-white px-1 brutal-border-sm text-[8px]">{req.votes}</span>
                         </button>
                       </div>
                     ))

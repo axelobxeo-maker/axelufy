@@ -4,6 +4,45 @@
  */
 
 import React, { useState } from 'react';
+import {
+  Wrench,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  Users,
+  Database,
+  BarChart2,
+  HelpCircle,
+  FileText,
+  UserCheck,
+  Plus,
+  Trash2,
+  Save,
+  Grid,
+  Sparkles,
+  Info,
+  CheckCircle,
+  Settings,
+  List,
+  Activity,
+  UserX,
+  PlusCircle,
+  AlertTriangle,
+  FolderOpen,
+  ArrowRightLeft,
+  Share2,
+  MessageSquare,
+  Award,
+  BookOpen,
+  RotateCcw,
+  Shield,
+  Clock,
+  ExternalLink,
+  ChevronDown,
+  Download,
+  Trash,
+  Copy,
+  Edit
+} from 'lucide-react';
 import { ModItem, CreditItem, PresetLink, FAQItem, PollingTopic, RequestMod } from '../types';
 import DashboardAnalytics from './DashboardAnalytics';
 
@@ -35,6 +74,7 @@ interface AdminPanelProps {
   onSaveRequest: (req: RequestMod) => void;
   visitorData: Array<{ date: string; visitors: number; downloads: number; uploads: number }>;
   soundPlay: (type: 'click' | 'success' | 'delete') => void;
+  isTableMissing?: boolean;
 }
 
 export default function AdminPanel({
@@ -64,7 +104,8 @@ export default function AdminPanel({
   onDeleteRequest,
   onSaveRequest,
   visitorData,
-  soundPlay
+  soundPlay,
+  isTableMissing = false
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics' | 'faqs' | 'polling' | 'requests'>('mod');
 
@@ -475,7 +516,10 @@ export default function AdminPanel({
     <section className="bg-[#A3FFD6] text-black border-3 border-black brutal-shadow p-4 mb-6 text-xs">
       {/* Admin Header */}
       <div className="flex justify-between items-center border-b-2 border-black pb-2 mb-4">
-        <h2 className="font-syne font-extrabold text-base sm:text-lg uppercase">🛠️ PANEL ADMIN AXELUF</h2>
+        <h2 className="font-syne font-extrabold text-base sm:text-lg uppercase flex items-center gap-1.5">
+          <Wrench className="w-5 h-5 text-black" />
+          <span>PANEL ADMIN AXELUF</span>
+        </h2>
         <span className="bg-[#4CCD99] px-2.5 py-0.5 border-2 border-black text-[9px] font-extrabold uppercase text-black rounded-full shadow-sm">
           DB PRO ACTIVE
         </span>
@@ -487,82 +531,118 @@ export default function AdminPanel({
           onClick={() => { setActiveTab('mod'); soundPlay('click'); }}
           className={`${
             activeTab === 'mod' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          Modifikasi Link
+          <LinkIcon className="w-3.5 h-3.5" />
+          <span>Modifikasi Link</span>
         </button>
         <button
           onClick={() => { setActiveTab('branding'); soundPlay('click'); }}
           className={`${
             activeTab === 'branding' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          Branding & BG
+          <ImageIcon className="w-3.5 h-3.5" />
+          <span>Branding & BG</span>
         </button>
         <button
           onClick={() => { setActiveTab('social'); soundPlay('click'); }}
           className={`${
             activeTab === 'social' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          Sosmed & Preset
+          <Users className="w-3.5 h-3.5" />
+          <span>Sosmed & Preset</span>
         </button>
         <button
           onClick={() => { setActiveTab('bulk'); soundPlay('click'); }}
           className={`${
             activeTab === 'bulk' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          Bulk Edit & Scan
+          <Grid className="w-3.5 h-3.5" />
+          <span>Bulk Edit & Scan</span>
         </button>
         <button
           onClick={() => { setActiveTab('faqs'); soundPlay('click'); }}
           className={`${
             activeTab === 'faqs' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          ❓ Kelola FAQ
+          <HelpCircle className="w-3.5 h-3.5" />
+          <span>Kelola FAQ</span>
         </button>
         <button
           onClick={() => { setActiveTab('polling'); soundPlay('click'); }}
           className={`${
             activeTab === 'polling' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          📊 Kelola Polling
+          <BarChart2 className="w-3.5 h-3.5" />
+          <span>Kelola Polling</span>
         </button>
         <button
           onClick={() => { setActiveTab('requests'); soundPlay('click'); }}
           className={`${
             activeTab === 'requests' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          📢 Kelola Request
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span>Kelola Request</span>
         </button>
         <button
           onClick={() => { setActiveTab('analytics'); soundPlay('click'); }}
           className={`${
             activeTab === 'analytics' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1`}
         >
-          📊 Analytics
+          <Activity className="w-3.5 h-3.5" />
+          <span>Analytics</span>
         </button>
         <button
           onClick={() => { setActiveTab('sql'); soundPlay('click'); }}
           className={`${
             activeTab === 'sql' ? 'bg-black text-white' : 'bg-white text-black'
-          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg text-blue-700`}
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg flex items-center gap-1 text-blue-700`}
         >
-          ⚙️ SQL Setup
+          <Settings className="w-3.5 h-3.5 text-blue-700" />
+          <span>SQL Setup</span>
         </button>
       </div>
+
+      {/* Table Missing Warning */}
+      {isTableMissing && (
+        <div className="bg-red-50 border-3 border-red-500 p-4 rounded-xl text-black space-y-2 mb-4 shadow-[4px_4px_0px_0px_#EF4444]">
+          <div className="flex items-center gap-2 text-red-600 font-extrabold text-xs uppercase">
+            <AlertTriangle className="w-5 h-5 text-red-600 animate-pulse animate-bounce" />
+            <span>⚠️ TABEL DATABASE 'settings' BELUM DIBUAT</span>
+          </div>
+          <p className="text-[10px] text-gray-700 font-bold leading-normal">
+            Data Anda dari Supabase tidak muncul karena tabel <code className="bg-zinc-200 px-1 py-0.5 border border-black rounded font-mono">settings</code> belum dibuat di database baru Anda.
+          </p>
+          <div className="text-[10px] text-gray-700 font-bold leading-normal flex items-center gap-1.5 flex-wrap">
+            <span>Silakan buka tab</span>
+            <button
+              onClick={() => { setActiveTab('sql'); soundPlay('click'); }}
+              className="bg-[#4CCD99] text-black px-1.5 py-0.5 border border-black font-extrabold uppercase rounded text-[8px] hover:bg-emerald-400 active:translate-y-0.5 cursor-pointer flex items-center gap-1"
+            >
+              <Database className="w-3 h-3 text-black" />
+              <span>SQL Setup</span>
+            </button>
+            <span>di atas, salin skripnya, lalu jalankan di SQL Editor Supabase Anda!</span>
+          </div>
+        </div>
+      )}
 
       {/* TAB MOD CONTENT */}
       {activeTab === 'mod' && (
         <div className="space-y-4">
           <form onSubmit={handleSubmitMod} className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
             <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E] flex justify-between items-center">
-              <span>{editIndex !== null ? '📝 Edit Link Modifikasi' : '➕ Tambah Mod Baru'}</span>
+              <span className="flex items-center gap-1.5">
+                {editIndex !== null ? <FileText className="w-4 h-4 text-[#2E8B6E]" /> : <Plus className="w-4 h-4 text-[#2E8B6E]" />}
+                <span>{editIndex !== null ? 'Edit Link Modifikasi' : 'Tambah Mod Baru'}</span>
+              </span>
               {editIndex !== null && (
                 <button
                   type="button"
@@ -630,7 +710,10 @@ export default function AdminPanel({
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block font-bold mb-0.5 uppercase text-[#2E8B6E] text-[8px]">🖼️ Link URL Gambar Mod (Unggah ke Postimages/ImgBB)</label>
+                <label className="block font-bold mb-0.5 uppercase text-[#2E8B6E] text-[8px] flex items-center gap-1">
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>Link URL Gambar Mod (Unggah ke Postimages/ImgBB)</span>
+                </label>
                 <input
                   type="text"
                   value={modImageUrl}
@@ -699,26 +782,27 @@ export default function AdminPanel({
               <div className="col-span-1 md:col-span-2 flex flex-wrap gap-4 p-2 bg-zinc-50 border-2 border-black rounded-lg">
                 <label className="flex items-center gap-1.5 font-bold cursor-pointer">
                   <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} className="scale-110" />
-                  <span>🛡️ Verified Badge</span>
+                  <span className="flex items-center gap-1"><Shield className="w-3.5 h-3.5 text-blue-500" /><span>Verified Badge</span></span>
                 </label>
                 <label className="flex items-center gap-1.5 font-bold cursor-pointer">
                   <input type="checkbox" checked={premium} onChange={(e) => setPremium(e.target.checked)} className="scale-110" />
-                  <span>👑 Premium Badge</span>
+                  <span className="flex items-center gap-1"><Award className="w-3.5 h-3.5 text-yellow-500 animate-pulse" /><span>Premium Badge</span></span>
                 </label>
                 <label className="flex items-center gap-1.5 font-bold cursor-pointer">
                   <input type="checkbox" checked={exclusive} onChange={(e) => setExclusive(e.target.checked)} className="scale-110" />
-                  <span>🔥 Exclusive Badge</span>
+                  <span className="flex items-center gap-1"><Sparkles className="w-3.5 h-3.5 text-amber-500" /><span>Exclusive Badge</span></span>
                 </label>
-                <label className="flex items-center gap-1.5 font-bold cursor-pointer">
+                <label className="flex items-center gap-1.5 font-bold cursor-pointer text-red-600">
                   <input type="checkbox" checked={isDraft} onChange={(e) => setIsDraft(e.target.checked)} className="scale-110 text-red-600" />
-                  <span className="text-red-600">⚠️ Simpan sebagai Draft</span>
+                  <span className="flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-red-600" /><span>Simpan sebagai Draft</span></span>
                 </label>
               </div>
 
               {/* Scheduled Publish */}
               <div className="col-span-1 md:col-span-2">
-                <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">
-                  📅 Jadwalkan Rilis Otomatis (Format ISO / Biarkan kosong jika langsung publik)
+                <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px] flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Jadwalkan Rilis Otomatis (Format ISO / Biarkan kosong jika langsung publik)</span>
                 </label>
                 <input
                   type="datetime-local"
@@ -732,7 +816,10 @@ export default function AdminPanel({
             {/* Form custom buttons */}
             <div className="mt-4 p-3 border-2 border-black bg-zinc-50 text-black rounded-xl">
               <h4 className="font-syne font-extrabold text-[10px] uppercase mb-2 text-black border-b-2 border-black pb-1.5 flex justify-between items-center">
-                <span>🔗 Tombol Eksternal Custom (Maks 5)</span>
+                <span className="flex items-center gap-1">
+                  <LinkIcon className="w-3.5 h-3.5" />
+                  <span>Tombol Eksternal Custom (Maks 5)</span>
+                </span>
                 <button
                   type="button"
                   onClick={handleAddLinkRow}
@@ -773,11 +860,11 @@ export default function AdminPanel({
                           onChange={(e) => handleUpdateLinkRow(idx, 'iconType', e.target.value)}
                           className="w-full border border-black p-1 rounded font-bold bg-white text-[9px]"
                         >
-                          <option value="video">🎥 Video Tutorial</option>
-                          <option value="download">📥 File Download</option>
-                          <option value="chat">💬 Komunitas / Obrolan</option>
-                          <option value="key">🔑 Token / Password</option>
-                          <option value="globe">🌐 Web Luar</option>
+                          <option value="video">Video Tutorial</option>
+                          <option value="download">File Download</option>
+                          <option value="chat">Komunitas / Obrolan</option>
+                          <option value="key">Token / Password</option>
+                          <option value="globe">Web Luar</option>
                         </select>
                       </div>
                       <button
@@ -802,9 +889,10 @@ export default function AdminPanel({
                         key={idx}
                         type="button"
                         onClick={() => handleLoadPreset(p)}
-                        className="bg-white border border-black text-[8px] px-1.5 py-0.5 rounded font-bold uppercase hover:bg-gray-100"
+                        className="bg-white border border-black text-[8px] px-1.5 py-0.5 rounded font-bold uppercase hover:bg-gray-100 flex items-center gap-1"
                       >
-                        ⚡ {p.label}
+                        <Sparkles className="w-2.5 h-2.5 text-zinc-500" />
+                        <span>{p.label}</span>
                       </button>
                     ))}
                   </div>
@@ -815,9 +903,10 @@ export default function AdminPanel({
             <div className="flex gap-2 mt-4">
               <button
                 type="submit"
-                className="flex-1 bg-[#4CCD99] hover:bg-[#3ec08a] font-extrabold uppercase py-2.5 border-3 border-black brutal-shadow-sm brutal-btn-sm text-xs text-black rounded-lg"
+                className="flex-1 bg-[#4CCD99] hover:bg-[#3ec08a] font-extrabold uppercase py-2.5 border-3 border-black brutal-shadow-sm brutal-btn-sm text-xs text-black rounded-lg flex items-center justify-center gap-1.5"
               >
-                {editIndex !== null ? 'Simpan Update Modifikasimu ⚡' : 'Rilis Modifikasi Baru Sekarang 🚀'}
+                <Save className="w-4 h-4 text-black" />
+                <span>{editIndex !== null ? 'Simpan Update Modifikasimu' : 'Rilis Modifikasi Baru Sekarang'}</span>
               </button>
               <button
                 type="button"
@@ -831,7 +920,10 @@ export default function AdminPanel({
 
           {/* Table List of mods */}
           <div>
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-2 text-black">📋 Daftar Link Aktif</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-2 text-black flex items-center gap-1.5">
+              <List className="w-4 h-4 text-black" />
+              <span>Daftar Link Aktif</span>
+            </h3>
             <div className="overflow-x-auto border-3 border-black rounded-xl">
               <table className="w-full bg-white text-left text-[11px] border-collapse">
                 <thead>
@@ -871,8 +963,8 @@ export default function AdminPanel({
                           ))}
                         </div>
                       </td>
-                      <td className="p-2 border-r border-black text-[9px] text-gray-500 leading-normal">
-                        👁️ {item.views || 0} • ❤️ {item.likes || 0} • 📥 {item.downloads || 0}
+                      <td className="p-2 border-r border-black text-[9px] text-gray-500 leading-normal font-mono">
+                        VIEWS: {item.views || 0} • LIKES: {item.likes || 0} • DL: {item.downloads || 0}
                       </td>
                       <td className="p-2">
                         <div className="flex gap-1.5">
@@ -908,7 +1000,10 @@ export default function AdminPanel({
       {activeTab === 'branding' && (
         <div className="space-y-4">
           <form onSubmit={handleBrandSubmit} className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">🎨 Ubah Branding Utama Web</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E] flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-[#2E8B6E]" />
+              <span>Ubah Branding Utama Web</span>
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               <div>
                 <label className="block font-bold mb-0.5 text-[8px] uppercase">Nama Web Utama</label>
@@ -929,7 +1024,10 @@ export default function AdminPanel({
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block font-bold mb-0.5 text-[8px] uppercase text-[#2E8B6E]">🖼️ Link URL Foto Profil</label>
+                <label className="block font-bold mb-0.5 text-[8px] uppercase text-[#2E8B6E] flex items-center gap-1">
+                  <ImageIcon className="w-3.5 h-3.5 text-[#2E8B6E]" />
+                  <span>Link URL Foto Profil</span>
+                </label>
                 <input
                   type="text"
                   value={brandLogo}
@@ -960,7 +1058,10 @@ export default function AdminPanel({
 
           {/* Announcement and Safelink configuration */}
           <form onSubmit={handleSafelinkSubmit} className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#4CCD99]">📢 Pengumuman & Safelink</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#4CCD99] flex items-center gap-1.5">
+              <MessageSquare className="w-4 h-4 text-black" />
+              <span>Pengumuman & Safelink</span>
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               <div>
                 <label className="block font-bold mb-0.5 text-[8px] uppercase">Teks Pengumuman (Gunakan pembatas | untuk beberapa baris)</label>
@@ -985,15 +1086,19 @@ export default function AdminPanel({
             </div>
             <button
               type="submit"
-              className="bg-[#4CCD99] text-black font-extrabold py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] uppercase rounded-lg"
+              className="bg-[#4CCD99] text-black font-extrabold py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] uppercase rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              Simpan Konfigurasi Safelink & Broadcast 💾
+              <Save className="w-3.5 h-3.5 text-black" />
+              <span>Simpan Konfigurasi Safelink & Broadcast</span>
             </button>
           </form>
 
           {/* Banner & Background image customization */}
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] space-y-3.5">
-            <h3 className="font-syne font-extrabold text-sm uppercase text-[#2E8B6E]">🎑 Pengaturan Gambar Banner & Background</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase text-[#2E8B6E] flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4 text-[#2E8B6E]" />
+              <span>Pengaturan Gambar Banner & Background</span>
+            </h3>
             <div>
               <label className="block font-bold mb-0.5 text-[8px] uppercase text-[#2E8B6E]">URL Gambar Banner (16:9)</label>
               <input
@@ -1053,7 +1158,10 @@ export default function AdminPanel({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Social credits manager */}
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#4CCD99]">🔗 Kelola Kredit Sosial Media Footer</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#4CCD99] flex items-center gap-1.5">
+              <Share2 className="w-4 h-4 text-black" />
+              <span>Kelola Kredit Sosial Media Footer</span>
+            </h3>
             <form onSubmit={handleCreditSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -1108,9 +1216,10 @@ export default function AdminPanel({
               </div>
               <button
                 type="submit"
-                className="bg-[#4CCD99] text-black font-extrabold uppercase py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg"
+                className="bg-[#4CCD99] text-black font-extrabold uppercase py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg flex items-center justify-center gap-1 cursor-pointer"
               >
-                Tambah Kredit Sosmed ➕
+                <Plus className="w-3.5 h-3.5 text-black" />
+                <span>Tambah Kredit Sosmed</span>
               </button>
             </form>
 
@@ -1136,7 +1245,10 @@ export default function AdminPanel({
 
           {/* Preset Buttons creator */}
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">📋 Setup Preset Tombol Cepat</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E] flex items-center gap-1.5">
+              <Award className="w-4 h-4 text-[#2E8B6E]" />
+              <span>Setup Preset Tombol Cepat</span>
+            </h3>
             <form onSubmit={handlePresetSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -1157,11 +1269,11 @@ export default function AdminPanel({
                     onChange={(e) => setPresetIcon(e.target.value)}
                     className="w-full border-2 border-black p-1.5 font-bold bg-white text-black text-[10px] rounded"
                   >
-                    <option value="video">🎥 Video Tutorial</option>
-                    <option value="download">📥 File Download</option>
-                    <option value="chat">💬 Komunitas / Obrolan</option>
-                    <option value="key">🔑 Token / Password</option>
-                    <option value="globe">🌐 Web Luar</option>
+                    <option value="video">Video Tutorial</option>
+                    <option value="download">File Download</option>
+                    <option value="chat">Komunitas / Obrolan</option>
+                    <option value="key">Token / Password</option>
+                    <option value="globe">Web Luar</option>
                   </select>
                 </div>
               </div>
@@ -1178,9 +1290,10 @@ export default function AdminPanel({
               </div>
               <button
                 type="submit"
-                className="bg-[#2E8B6E] text-white font-extrabold uppercase py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg"
+                className="bg-[#2E8B6E] text-white font-extrabold uppercase py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg flex items-center justify-center gap-1 cursor-pointer"
               >
-                Simpan Preset Cepat 💾
+                <Save className="w-3.5 h-3.5 text-white" />
+                <span>Simpan Preset Cepat</span>
               </button>
             </form>
 
@@ -1189,8 +1302,8 @@ export default function AdminPanel({
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
                 {presets.map((p, index) => (
                   <div key={index} className="flex items-center justify-between p-2 border-2 border-black bg-white rounded-lg text-[10px]">
-                    <span className="font-bold uppercase text-black flex items-center gap-1">
-                      <span>{p.iconType === 'video' ? '🎥' : p.iconType === 'download' ? '📥' : '💬'}</span>
+                    <span className="font-bold uppercase text-black flex items-center gap-1.5">
+                      {p.iconType === 'video' ? <Activity className="w-3.5 h-3.5 text-zinc-500" /> : p.iconType === 'download' ? <Download className="w-3.5 h-3.5 text-zinc-500" /> : <MessageSquare className="w-3.5 h-3.5 text-zinc-500" />}
                       <span>{p.label}</span>
                     </span>
                     <button
@@ -1212,7 +1325,10 @@ export default function AdminPanel({
         <div className="space-y-6">
           {/* Data Backup/Restore file managers */}
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">📦 Ekspor & Impor Database Portal (CSV & JSON)</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E] flex items-center gap-1.5">
+              <Database className="w-4 h-4 text-[#2E8B6E]" />
+              <span>Ekspor & Impor Database Portal (CSV & JSON)</span>
+            </h3>
             <p className="text-[10px] text-gray-500 mb-4 leading-normal">
               Lakukan pencadangan data modifikasi secara offline dalam format JSON atau CSV. Anda juga bisa mengunggah file untuk melakukan migrasi cepat!
             </p>
@@ -1223,15 +1339,17 @@ export default function AdminPanel({
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={handleBackupJSON}
-                    className="flex-1 bg-black text-white font-bold py-2 px-3 border border-black rounded-lg hover:bg-zinc-800 text-[10px] uppercase"
+                    className="flex-1 bg-black text-white font-bold py-2 px-3 border border-black rounded-lg hover:bg-zinc-800 text-[10px] uppercase flex items-center justify-center gap-1"
                   >
-                    Ekspor JSON 💾
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Ekspor JSON</span>
                   </button>
                   <button
                     onClick={handleExportCSV}
-                    className="flex-1 bg-white text-black font-extrabold py-2 px-3 border-2 border-black rounded-lg hover:bg-gray-100 text-[10px] uppercase"
+                    className="flex-1 bg-white text-black font-extrabold py-2 px-3 border-2 border-black rounded-lg hover:bg-gray-100 text-[10px] uppercase flex items-center justify-center gap-1"
                   >
-                    Ekspor CSV 📊
+                    <FileText className="w-3.5 h-3.5 text-black" />
+                    <span>Ekspor CSV</span>
                   </button>
                 </div>
               </div>
@@ -1265,7 +1383,10 @@ export default function AdminPanel({
 
           {/* Automatic scanners */}
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-red-600">🛡️ Pemindai Link Duplikat & Broken Link Detector</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-red-600 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-red-600" />
+              <span>Pemindai Link Duplikat & Broken Link Detector</span>
+            </h3>
             <p className="text-[10px] text-gray-500 mb-4 leading-normal">
               Menjaga kualitas portal dengan mendeteksi entri ganda atau tautan download yang rusak/mati.
             </p>
@@ -1277,11 +1398,12 @@ export default function AdminPanel({
                   setShowDuplicates(!showDuplicates);
                   setShowBroken(false);
                 }}
-                className={`flex-1 border-2 border-black py-2 px-3 rounded-lg text-[10px] font-extrabold uppercase ${
+                className={`flex-1 border-2 border-black py-2 px-3 rounded-lg text-[10px] font-extrabold uppercase flex items-center justify-center gap-1.5 cursor-pointer ${
                   showDuplicates ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-100'
                 }`}
               >
-                {showDuplicates ? 'Sembunyikan Hasil Scan' : 'Deteksi Duplikat 👥'}
+                <Users className="w-3.5 h-3.5" />
+                <span>{showDuplicates ? 'Sembunyikan Hasil Scan' : 'Deteksi Duplikat'}</span>
               </button>
               <button
                 onClick={() => {
@@ -1289,11 +1411,12 @@ export default function AdminPanel({
                   setShowBroken(!showBroken);
                   setShowDuplicates(false);
                 }}
-                className={`flex-1 border-2 border-black py-2 px-3 rounded-lg text-[10px] font-extrabold uppercase ${
+                className={`flex-1 border-2 border-black py-2 px-3 rounded-lg text-[10px] font-extrabold uppercase flex items-center justify-center gap-1.5 cursor-pointer ${
                   showBroken ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-100'
                 }`}
               >
-                {showBroken ? 'Sembunyikan Hasil Scan' : 'Broken Link Detector ⚠️'}
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>{showBroken ? 'Sembunyikan Hasil Scan' : 'Broken Link Detector'}</span>
               </button>
             </div>
 
@@ -1409,9 +1532,10 @@ export default function AdminPanel({
                   </button>
                   <button
                     onClick={handleBulkDeleteSubmit}
-                    className="bg-red-500 text-white font-bold px-2 py-1 text-[9px] border border-black rounded"
+                    className="bg-red-500 text-white font-bold px-2 py-1 text-[9px] border border-black rounded flex items-center gap-1"
                   >
-                    Bulk Hapus 🗑️
+                    <Trash className="w-3.5 h-3.5 text-white" />
+                    <span>Bulk Hapus</span>
                   </button>
                 </div>
               )}
@@ -1466,7 +1590,10 @@ export default function AdminPanel({
       {activeTab === 'sql' && (
         <div className="space-y-4">
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-1.5 text-blue-700">⚙️ SQL Setup Injector untuk Database Baru</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-1.5 text-blue-700 flex items-center gap-1.5">
+              <Database className="w-4 h-4 text-blue-700" />
+              <span>SQL Setup Injector untuk Database Baru</span>
+            </h3>
             <p className="text-[10px] text-gray-500 mb-3 leading-normal">
               Salin seluruh query SQL di bawah ini, buka dasbor Supabase Anda, masuk ke menu <strong>SQL Editor</strong>, buat query baru, tempel, lalu klik <strong>Run</strong>.
             </p>
@@ -1511,9 +1638,10 @@ CREATE POLICY "Allow write access for anyone with API key" ON public.settings FO
                 );
                 alert("Query SQL berhasil disalin ke clipboard!");
               }}
-              className="bg-[#4CCD99] text-black font-extrabold uppercase py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg"
+              className="bg-[#4CCD99] text-black font-extrabold uppercase py-2 px-4 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              Salin Skrip SQL 📋
+              <Copy className="w-3.5 h-3.5 text-black" />
+              <span>Salin Skrip SQL</span>
             </button>
           </div>
         </div>
@@ -1523,8 +1651,9 @@ CREATE POLICY "Allow write access for anyone with API key" ON public.settings FO
       {activeTab === 'faqs' && (
         <div className="space-y-4">
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">
-              {editingFaqIndex !== null ? '📝 Edit Pertanyaan FAQ' : '➕ Tambah FAQ Baru'}
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E] flex items-center gap-1.5">
+              {editingFaqIndex !== null ? <Edit className="w-4 h-4 text-[#2E8B6E]" /> : <Plus className="w-4 h-4 text-[#2E8B6E]" />}
+              <span>{editingFaqIndex !== null ? 'Edit Pertanyaan FAQ' : 'Tambah FAQ Baru'}</span>
             </h3>
             <div className="space-y-3">
               <div>
