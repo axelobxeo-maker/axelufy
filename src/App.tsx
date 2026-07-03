@@ -59,8 +59,8 @@ import AdminPanel from './components/AdminPanel';
 import FAQPolling from './components/FAQPolling';
 
 // SUPABASE CLIENT INITIALIZATION
-const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || "https://hhvchrojexhjdrwtsejd.supabase.co";
-const SUPABASE_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhodmNocm9qZXhoamRyd3RzZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA2NTksImV4cCI6MjA5ODM5NjY1OX0.UzIx1pZKcCC8Eo2NK9XY1iX3djbjYLnaJm0hjABRAnA";
+const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || "https://acsgbqipvdppkuetpobu.supabase.co";
+const SUPABASE_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjc2dicWlwdmRwcGt1ZXRwb2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNTUzMzksImV4cCI6MjA5ODYzMTMzOX0.n7iKRHdKxQAlsK8sCi_qaHZukLsoO7GqECOuAXbRSDc";
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DB_KEYS = {
@@ -71,63 +71,7 @@ const DB_KEYS = {
 };
 
 // STATIC DEFAULT FALLBACK DATA (For instant loads or DB offline fallbacks)
-const DEFAULT_MODS: ModItem[] = [
-  {
-    id: "mlbb-skin-v1",
-    name: "Mobile Legends Mod Skin & Radar Map (Pro)",
-    tag: "MLBB, GAME, SKIN",
-    desc: "Unlock semua skin premium hero favoritmu secara aman, anti banned lengkap dengan radar map taktis.",
-    url: btoa("https://www.mediafire.com"),
-    password: btoa("axeluf77"),
-    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800",
-    imageRatio: "aspect-video object-cover",
-    views: 1242,
-    likes: 345,
-    downloads: 876,
-    verified: true,
-    premium: true,
-    exclusive: true,
-    changelog: "Kesesuaian update patch musim terbaru, optimalisasi anti-banned.",
-    versionHistory: [
-      { version: "1.2", changelog: "Perbaikan lag saat memuat skin naga.", date: "2026-06-15" },
-      { version: "1.1", changelog: "Penambahan radar map dasar.", date: "2026-05-10" }
-    ],
-    mirrors: [
-      { name: "g-drive", url: "https://drive.google.com" },
-      { name: "mega", url: "https://mega.nz" }
-    ],
-    comments: [
-      { name: "RizkyML", text: "Mantap bang skin lancelot matadornya work 100%!", timestamp: "2 Jam Lalu" },
-      { name: "GamerIndo", text: "Radar map aman no banned dah pake 3 hari.", timestamp: "Kemarin" }
-    ],
-    customButtons: [
-      { label: "Tonton Gameplay", url: "https://youtube.com/@axelufey", iconType: "video" }
-    ]
-  },
-  {
-    id: "gta-sa-lite-v2",
-    name: "GTA San Andreas Lite Indonesia v2.0",
-    tag: "GAME, APK, LITE",
-    desc: "Petualangan legendaris Carl Johnson dengan grafis super HD yang sudah dikompresi ringan hingga 200MB.",
-    url: btoa("https://www.mediafire.com"),
-    password: btoa("gtaindo"),
-    image: "https://images.unsplash.com/photo-1551103782-8ab07afd45c1?auto=format&fit=crop&q=80&w=800",
-    imageRatio: "aspect-video object-cover",
-    views: 2453,
-    likes: 671,
-    downloads: 1420,
-    verified: true,
-    premium: false,
-    exclusive: true,
-    changelog: "Fix force close di Android 13/14 dan penambahan MOD sholat jamaah.",
-    mirrors: [
-      { name: "terabox", url: "https://terabox.com" }
-    ],
-    comments: [
-      { name: "Ucok_Gaming", text: "Suasananya Indo banget ada motor drag, mantap lur!", timestamp: "4 Jam Lalu" }
-    ]
-  }
-];
+const DEFAULT_MODS: ModItem[] = [];
 
 const DEFAULT_CREDITS: CreditItem[] = [
   { platform: "YouTube", handle: "AXELUF", url: "https://youtube.com/@axelufey", color: "#FF71CD" },
@@ -214,18 +158,15 @@ export default function App() {
     id: "poll-v1",
     question: "PILIH RELEASE MOD BERIKUTNYA?",
     options: [
-      { id: "opt-gta5", text: "GTA 5 MOD GRAPHICS HD (ANDROID)", votes: 242 },
-      { id: "opt-ff", text: "FREE FIRE ANTENA & SKIN LITE", votes: 189 },
-      { id: "opt-pes", text: "PES 2026 PPSSPP CAMERA PS5", votes: 312 }
+      { id: "opt-gta5", text: "GTA 5 MOD GRAPHICS HD (ANDROID)", votes: 0 },
+      { id: "opt-ff", text: "FREE FIRE ANTENA & SKIN LITE", votes: 0 },
+      { id: "opt-pes", text: "PES 2026 PPSSPP CAMERA PS5", votes: 0 }
     ],
-    totalVotes: 743
+    totalVotes: 0
   });
 
   // Requests Mod State
-  const [requests, setRequests] = useState<RequestMod[]>([
-    { id: "req-1", name: "FIFA Mobile Unlimited Coin", category: "GAME", status: "pending", votes: 45, date: "2026-07-01" },
-    { id: "req-2", name: "Kinemaster Pro Tanpa Watermark v9", category: "TOOLS", status: "approved", votes: 78, date: "2026-06-28" }
-  ]);
+  const [requests, setRequests] = useState<RequestMod[]>([]);
 
   // Safelink Countdown Overlay State
   const [safelinkOverlayOpen, setSafelinkOverlayOpen] = useState(false);
