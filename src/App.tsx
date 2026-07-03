@@ -1296,45 +1296,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ANNOUNCEMENT POPUP ON SESSION ENTER */}
-      {showAnnouncePopup && (
-        <div className="fixed inset-0 bg-black/85 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white text-black border-3 border-black p-5 max-w-sm w-full text-center relative rounded-2xl shadow-[8px_8px_0_0_#000000] transform rotate-1 flex flex-col items-center">
-            <button
-              onClick={() => {
-                setShowAnnouncePopup(false);
-                sessionStorage.setItem('announcement_seen', 'true');
-                playSynth('click');
-              }}
-              className="absolute -top-3 -right-3 bg-white border-2 border-black w-8 h-8 flex items-center justify-center font-bold hover:bg-[#A3FFD6] rounded-full shadow-[2px_2px_0_0_#000000]"
-            >
-              ✕
-            </button>
-            <Bell className="w-10 h-10 text-black mb-2 animate-bounce" />
-            <h3 className="font-syne font-extrabold text-base uppercase mb-1">MIGRASI SERVER AXELUF</h3>
-            <p className="text-[10px] text-gray-500 mb-4 leading-relaxed font-semibold">
-              Kabar gembira! Portal v5.3 kini didukung oleh server cluster cloud run & database Supabase hibrida super ringan dengan jaminan unduhan 10x lipat lebih cepat tanpa terputus!
-            </p>
-            <div className="p-2.5 bg-[#A3FFD6]/30 border-2 border-dashed border-[#2E8B6E] rounded-lg text-[9px] font-extrabold text-[#2E8B6E] mb-4 flex items-center justify-center gap-1.5 w-full">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>10.000+ MOD AKTIF & SIAP PAKAI</span>
-              <Sparkles className="w-3.5 h-3.5" />
-            </div>
-            <button
-              onClick={() => {
-                setShowAnnouncePopup(false);
-                sessionStorage.setItem('announcement_seen', 'true');
-                playSynth('success');
-              }}
-              className="w-full bg-[#4CCD99] text-black font-extrabold py-2 border-2 border-black rounded-xl brutal-shadow-sm active:translate-y-0.5 uppercase text-xs flex items-center justify-center gap-1.5"
-            >
-              <span>Mulai Eksplorasi</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* FLOATING SIDEBAR MENU BUTTON */}
       <button
         onClick={() => {
@@ -2218,7 +2179,6 @@ export default function App() {
                 window.location.hash = '#logy';
               } else {
                 setFooterClickCount(nextClicks);
-                showToast(`Klik ${7 - nextClicks} kali lagi untuk akses rahasia`, "info");
               }
             }}
             className="font-syne font-extrabold uppercase tracking-wider text-xs cursor-pointer select-none hover:text-theme-accent transition-colors"
