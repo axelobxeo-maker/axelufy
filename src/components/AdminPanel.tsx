@@ -4,13 +4,16 @@
  */
 
 import React, { useState } from 'react';
-import { ModItem, CreditItem, PresetLink } from '../types';
+import { ModItem, CreditItem, PresetLink, FAQItem, PollingTopic, RequestMod } from '../types';
 import DashboardAnalytics from './DashboardAnalytics';
 
 interface AdminPanelProps {
   mods: ModItem[];
   credits: CreditItem[];
   presets: PresetLink[];
+  faqs: FAQItem[];
+  polling: PollingTopic;
+  requests: RequestMod[];
   onSaveMod: (mod: Partial<ModItem>, index?: number) => void;
   onDeleteMod: (index: number) => void;
   onSaveBranding: (title: string, subtitle: string, logo: string, alignment: string) => void;
@@ -26,6 +29,10 @@ interface AdminPanelProps {
   onBulkAddTag: (indices: number[], tag: string) => void;
   onBulkDraft: (indices: number[], isDraft: boolean) => void;
   onRestoreAllData: (data: any) => void;
+  onSaveFaqs: (faqs: FAQItem[]) => void;
+  onSavePolling: (poll: PollingTopic) => void;
+  onDeleteRequest: (id: string) => void;
+  onSaveRequest: (req: RequestMod) => void;
   visitorData: Array<{ date: string; visitors: number; downloads: number; uploads: number }>;
   soundPlay: (type: 'click' | 'success' | 'delete') => void;
 }
@@ -34,6 +41,9 @@ export default function AdminPanel({
   mods,
   credits,
   presets,
+  faqs,
+  polling,
+  requests,
   onSaveMod,
   onDeleteMod,
   onSaveBranding,
@@ -49,10 +59,14 @@ export default function AdminPanel({
   onBulkAddTag,
   onBulkDraft,
   onRestoreAllData,
+  onSaveFaqs,
+  onSavePolling,
+  onDeleteRequest,
+  onSaveRequest,
   visitorData,
   soundPlay
 }: AdminPanelProps) {
-  const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics'>('mod');
+  const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics' | 'faqs' | 'polling' | 'requests'>('mod');
 
   // Mod Form States
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -104,6 +118,23 @@ export default function AdminPanel({
   const [bulkTagInput, setBulkTagInput] = useState('');
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [showBroken, setShowBroken] = useState(false);
+
+  // FAQ management states
+  const [faqQuestion, setFaqQuestion] = useState('');
+  const [faqAnswer, setFaqAnswer] = useState('');
+  const [faqCategory, setFaqCategory] = useState('');
+  const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
+
+  // Polling management states
+  const [pollQuestionInput, setPollQuestionInput] = useState(polling.question);
+  const [pollOptionsList, setPollOptionsList] = useState(polling.options);
+
+  // Request Mod editing states
+  const [editingRequestId, setEditingRequestId] = useState<string | null>(null);
+  const [reqEditName, setReqEditName] = useState('');
+  const [reqEditCategory, setReqEditCategory] = useState('');
+  const [reqEditStatus, setReqEditStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [reqEditVotes, setReqEditVotes] = useState(1);
 
   // Decoders / Encoders
   const encodeSafe = (str: string): string => btoa(unescape(encodeURIComponent(str)));
@@ -433,6 +464,13 @@ export default function AdminPanel({
     soundPlay('success');
   };
 
+  React.useEffect(() => {
+    if (polling) {
+      setPollQuestionInput(polling.question);
+      setPollOptionsList(polling.options || []);
+    }
+  }, [polling]);
+
   return (
     <section className="bg-[#A3FFD6] text-black border-3 border-black brutal-shadow p-4 mb-6 text-xs">
       {/* Admin Header */}
@@ -446,7 +484,7 @@ export default function AdminPanel({
       {/* Tabs Menu */}
       <div className="flex flex-wrap gap-1.5 mb-4">
         <button
-          onClick={() => setActiveTab('mod')}
+          onClick={() => { setActiveTab('mod'); soundPlay('click'); }}
           className={`${
             activeTab === 'mod' ? 'bg-black text-white' : 'bg-white text-black'
           } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
@@ -454,7 +492,7 @@ export default function AdminPanel({
           Modifikasi Link
         </button>
         <button
-          onClick={() => setActiveTab('branding')}
+          onClick={() => { setActiveTab('branding'); soundPlay('click'); }}
           className={`${
             activeTab === 'branding' ? 'bg-black text-white' : 'bg-white text-black'
           } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
@@ -462,7 +500,7 @@ export default function AdminPanel({
           Branding & BG
         </button>
         <button
-          onClick={() => setActiveTab('social')}
+          onClick={() => { setActiveTab('social'); soundPlay('click'); }}
           className={`${
             activeTab === 'social' ? 'bg-black text-white' : 'bg-white text-black'
           } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
@@ -470,7 +508,7 @@ export default function AdminPanel({
           Sosmed & Preset
         </button>
         <button
-          onClick={() => setActiveTab('bulk')}
+          onClick={() => { setActiveTab('bulk'); soundPlay('click'); }}
           className={`${
             activeTab === 'bulk' ? 'bg-black text-white' : 'bg-white text-black'
           } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
@@ -478,7 +516,31 @@ export default function AdminPanel({
           Bulk Edit & Scan
         </button>
         <button
-          onClick={() => setActiveTab('analytics')}
+          onClick={() => { setActiveTab('faqs'); soundPlay('click'); }}
+          className={`${
+            activeTab === 'faqs' ? 'bg-black text-white' : 'bg-white text-black'
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+        >
+          ❓ Kelola FAQ
+        </button>
+        <button
+          onClick={() => { setActiveTab('polling'); soundPlay('click'); }}
+          className={`${
+            activeTab === 'polling' ? 'bg-black text-white' : 'bg-white text-black'
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+        >
+          📊 Kelola Polling
+        </button>
+        <button
+          onClick={() => { setActiveTab('requests'); soundPlay('click'); }}
+          className={`${
+            activeTab === 'requests' ? 'bg-black text-white' : 'bg-white text-black'
+          } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
+        >
+          📢 Kelola Request
+        </button>
+        <button
+          onClick={() => { setActiveTab('analytics'); soundPlay('click'); }}
           className={`${
             activeTab === 'analytics' ? 'bg-black text-white' : 'bg-white text-black'
           } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg`}
@@ -486,7 +548,7 @@ export default function AdminPanel({
           📊 Analytics
         </button>
         <button
-          onClick={() => setActiveTab('sql')}
+          onClick={() => { setActiveTab('sql'); soundPlay('click'); }}
           className={`${
             activeTab === 'sql' ? 'bg-black text-white' : 'bg-white text-black'
           } px-3 py-1.5 text-[10px] uppercase font-bold border-2 border-black brutal-shadow-sm rounded-lg text-blue-700`}
@@ -1453,6 +1515,396 @@ CREATE POLICY "Allow write access for anyone with API key" ON public.settings FO
             >
               Salin Skrip SQL 📋
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* TAB FAQ MANAGEMENT */}
+      {activeTab === 'faqs' && (
+        <div className="space-y-4">
+          <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">
+              {editingFaqIndex !== null ? '📝 Edit Pertanyaan FAQ' : '➕ Tambah FAQ Baru'}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block font-bold mb-1 text-[9px] uppercase text-gray-700">Pertanyaan (Question)</label>
+                <input
+                  type="text"
+                  value={faqQuestion}
+                  onChange={(e) => setFaqQuestion(e.target.value)}
+                  placeholder="e.g. Bagaimana cara memasang Mod?"
+                  className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none text-[11px]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-1 text-[9px] uppercase text-gray-700">Jawaban (Answer)</label>
+                <textarea
+                  value={faqAnswer}
+                  onChange={(e) => setFaqAnswer(e.target.value)}
+                  placeholder="e.g. Unduh file apk, lalu pasang seperti biasa..."
+                  rows={3}
+                  className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none text-[11px]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold mb-1 text-[9px] uppercase text-gray-700">Kategori / Topik</label>
+                <input
+                  type="text"
+                  value={faqCategory}
+                  onChange={(e) => setFaqCategory(e.target.value)}
+                  placeholder="e.g. MASALAH, PASANG, UMUM"
+                  className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none text-[11px]"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!faqQuestion.trim() || !faqAnswer.trim()) return;
+                    const newFaqItem = {
+                      question: faqQuestion,
+                      answer: faqAnswer,
+                      category: faqCategory || 'UMUM'
+                    };
+                    let updatedFaqs = [...faqs];
+                    if (editingFaqIndex !== null) {
+                      updatedFaqs[editingFaqIndex] = newFaqItem;
+                      setEditingFaqIndex(null);
+                    } else {
+                      updatedFaqs.push(newFaqItem);
+                    }
+                    onSaveFaqs(updatedFaqs);
+                    setFaqQuestion('');
+                    setFaqAnswer('');
+                    setFaqCategory('');
+                    soundPlay('success');
+                  }}
+                  className="bg-[#2E8B6E] text-white font-extrabold py-2 px-4 border-2 border-black rounded-lg hover:bg-[#20634e] active:translate-y-0.5 shadow-sm text-[10px] uppercase"
+                >
+                  {editingFaqIndex !== null ? 'Simpan Perubahan' : 'Tambah FAQ'}
+                </button>
+                {editingFaqIndex !== null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingFaqIndex(null);
+                      setFaqQuestion('');
+                      setFaqAnswer('');
+                      setFaqCategory('');
+                      soundPlay('click');
+                    }}
+                    className="bg-gray-500 text-white font-extrabold py-2 px-4 border-2 border-black rounded-lg hover:bg-gray-600 active:translate-y-0.5 shadow-sm text-[10px] uppercase"
+                  >
+                    Batal
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-black">📋 Daftar FAQ Saat Ini ({faqs.length})</h3>
+            {faqs.length === 0 ? (
+              <p className="text-[10px] text-gray-500">Belum ada FAQ.</p>
+            ) : (
+              <div className="space-y-3.5 divide-y divide-black max-h-96 overflow-y-auto pr-1">
+                {faqs.map((item, idx) => (
+                  <div key={idx} className="pt-3 first:pt-0 flex flex-col justify-between gap-2">
+                    <div>
+                      <span className="bg-[#A3FFD6] text-black text-[8px] font-bold px-1.5 py-0.5 border border-black rounded uppercase">
+                        {item.category}
+                      </span>
+                      <h4 className="font-bold text-[11px] mt-1.5 text-black">Q: {item.question}</h4>
+                      <p className="text-[10px] text-gray-600 mt-1">A: {item.answer}</p>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => {
+                          setEditingFaqIndex(idx);
+                          setFaqQuestion(item.question);
+                          setFaqAnswer(item.answer);
+                          setFaqCategory(item.category);
+                          soundPlay('click');
+                        }}
+                        className="bg-yellow-400 text-black border border-black font-extrabold px-2 py-1 text-[9px] rounded uppercase hover:bg-yellow-500"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm('Hapus FAQ ini?')) {
+                            const updated = faqs.filter((_, i) => i !== idx);
+                            onSaveFaqs(updated);
+                            soundPlay('delete');
+                          }
+                        }}
+                        className="bg-red-500 text-white border border-black font-extrabold px-2 py-1 text-[9px] rounded uppercase hover:bg-red-600"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB POLLING MANAGEMENT */}
+      {activeTab === 'polling' && (
+        <div className="space-y-4 text-black">
+          <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">📊 EDIT POLLING KOMUNITAS</h3>
+            
+            <div className="space-y-3 text-[11px]">
+              <div>
+                <label className="block font-bold mb-1 text-[9px] uppercase text-gray-700">Pertanyaan Polling</label>
+                <input
+                  type="text"
+                  value={pollQuestionInput}
+                  onChange={(e) => setPollQuestionInput(e.target.value)}
+                  className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1 text-[9px] uppercase text-gray-700">Pilihan Polling (Options) & Suara (Votes)</label>
+                <div className="space-y-2.5">
+                  {pollOptionsList.map((opt, idx) => (
+                    <div key={opt.id} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={opt.text}
+                        onChange={(e) => {
+                          const updated = [...pollOptionsList];
+                          updated[idx] = { ...opt, text: e.target.value };
+                          setPollOptionsList(updated);
+                        }}
+                        placeholder="Pilihan teks..."
+                        className="flex-1 border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        value={opt.votes}
+                        onChange={(e) => {
+                          const updated = [...pollOptionsList];
+                          updated[idx] = { ...opt, votes: parseInt(e.target.value) || 0 };
+                          setPollOptionsList(updated);
+                        }}
+                        className="w-24 border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                        placeholder="Votes"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = pollOptionsList.filter(o => o.id !== opt.id);
+                          setPollOptionsList(updated);
+                          soundPlay('delete');
+                        }}
+                        className="bg-red-500 text-white border-2 border-black w-9 h-9 flex items-center justify-center font-bold text-sm rounded-lg hover:bg-red-600 shrink-0"
+                        title="Hapus opsi"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextId = `opt-${Date.now()}`;
+                    setPollOptionsList([...pollOptionsList, { id: nextId, text: '', votes: 0 }]);
+                    soundPlay('click');
+                  }}
+                  className="bg-white border-2 border-black font-bold px-3 py-1.5 text-[9px] rounded-lg uppercase hover:bg-gray-100 shadow-sm"
+                >
+                  ➕ Tambah Opsi Baru
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('Atur ulang seluruh suara voting pilihan menjadi 0?')) {
+                      const updated = pollOptionsList.map(o => ({ ...o, votes: 0 }));
+                      setPollOptionsList(updated);
+                      soundPlay('delete');
+                    }
+                  }}
+                  className="bg-orange-500 text-white border-2 border-black font-bold px-3 py-1.5 text-[9px] rounded-lg uppercase hover:bg-orange-600 shadow-sm"
+                >
+                  🔄 Reset Semua Suara
+                </button>
+              </div>
+
+              <div className="border-t-2 border-dashed border-black pt-4 mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!pollQuestionInput.trim()) return;
+                    const total = pollOptionsList.reduce((acc, curr) => acc + curr.votes, 0);
+                    const updatedPoll: PollingTopic = {
+                      id: polling.id || 'poll-v1',
+                      question: pollQuestionInput,
+                      options: pollOptionsList,
+                      totalVotes: total
+                    };
+                    onSavePolling(updatedPoll);
+                    soundPlay('success');
+                  }}
+                  className="w-full bg-[#4CCD99] text-black font-extrabold uppercase py-2.5 border-2 border-black rounded-xl text-xs shadow-sm active:translate-y-0.5"
+                >
+                  Simpan Perubahan Polling ⚡
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB REQUESTS MANAGEMENT */}
+      {activeTab === 'requests' && (
+        <div className="space-y-4 text-black">
+          {editingRequestId && (
+            <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
+              <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">📝 EDIT PERMINTAAN MOD</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                <div>
+                  <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Nama Game / Aplikasi</label>
+                  <input
+                    type="text"
+                    value={reqEditName}
+                    onChange={(e) => setReqEditName(e.target.value)}
+                    className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Kategori</label>
+                  <input
+                    type="text"
+                    value={reqEditCategory}
+                    onChange={(e) => setReqEditCategory(e.target.value)}
+                    className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Status</label>
+                  <select
+                    value={reqEditStatus}
+                    onChange={(e) => setReqEditStatus(e.target.value as any)}
+                    className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                  >
+                    <option value="pending">PENDING (Menunggu)</option>
+                    <option value="approved">APPROVED (Selesai/Dibuat)</option>
+                    <option value="rejected">REJECTED (Ditolak)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Suara / Votes</label>
+                  <input
+                    type="number"
+                    value={reqEditVotes}
+                    onChange={(e) => setReqEditVotes(parseInt(e.target.value) || 0)}
+                    className="w-full border-2 border-black p-2 font-bold bg-white rounded-lg focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!reqEditName.trim()) return;
+                    const matched = requests.find(r => r.id === editingRequestId);
+                    if (matched) {
+                      onSaveRequest({
+                        ...matched,
+                        name: reqEditName,
+                        category: reqEditCategory || 'UMUM',
+                        status: reqEditStatus,
+                        votes: reqEditVotes
+                      });
+                    }
+                    setEditingRequestId(null);
+                  }}
+                  className="bg-[#2E8B6E] text-white font-bold py-2 px-4 border-2 border-black rounded-lg text-[10px] uppercase hover:bg-[#20634e]"
+                >
+                  Simpan Perubahan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setEditingRequestId(null); soundPlay('click'); }}
+                  className="bg-gray-500 text-white font-bold py-2 px-4 border-2 border-black rounded-lg text-[10px] uppercase hover:bg-gray-600"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-black">📋 Daftar Request Mod Komunitas ({requests.length})</h3>
+            {requests.length === 0 ? (
+              <p className="text-[10px] text-gray-500">Belum ada request mod.</p>
+            ) : (
+              <div className="max-h-96 overflow-y-auto border-2 border-black rounded-lg">
+                <table className="w-full bg-white text-left text-[10px] border-collapse">
+                  <thead>
+                    <tr className="bg-gray-200 uppercase font-bold text-[8px] border-b border-black">
+                      <th className="p-2 border-r border-black">Nama Aplikasi</th>
+                      <th className="p-2 border-r border-black">Kategori</th>
+                      <th className="p-2 border-r border-black">Status</th>
+                      <th className="p-2 border-r border-black text-center">Votes</th>
+                      <th className="p-2 text-center">Tindakan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black">
+                    {requests.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="p-2 border-r border-black font-bold">{item.name}</td>
+                        <td className="p-2 border-r border-black uppercase text-[9px]">{item.category}</td>
+                        <td className="p-2 border-r border-black">
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase border border-black ${
+                            item.status === 'approved' ? 'bg-[#4CCD99] text-black' :
+                            item.status === 'rejected' ? 'bg-red-400 text-white' : 'bg-yellow-200 text-black'
+                          }`}>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="p-2 border-r border-black text-center font-extrabold">{item.votes}</td>
+                        <td className="p-2 text-center space-x-1.5 whitespace-nowrap">
+                          <button
+                            onClick={() => {
+                              setEditingRequestId(item.id);
+                              setReqEditName(item.name);
+                              setReqEditCategory(item.category);
+                              setReqEditStatus(item.status);
+                              setReqEditVotes(item.votes);
+                              soundPlay('click');
+                            }}
+                            className="bg-yellow-400 text-black border border-black px-1.5 py-0.5 text-[8px] font-bold rounded uppercase hover:bg-yellow-500"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Hapus request mod "${item.name}"?`)) {
+                                onDeleteRequest(item.id);
+                              }
+                            }}
+                            className="bg-red-500 text-white border border-black px-1.5 py-0.5 text-[8px] font-bold rounded uppercase hover:bg-red-600"
+                          >
+                            Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}

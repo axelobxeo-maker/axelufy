@@ -19,8 +19,8 @@ import AdminPanel from './components/AdminPanel';
 import FAQPolling from './components/FAQPolling';
 
 // SUPABASE CLIENT INITIALIZATION
-const SUPABASE_URL = "https://hhvchrojexhjdrwtsejd.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhodmNocm9qZXhoamRyd3RzZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA2NTksImV4cCI6MjA5ODM5NjY1OX0.UzIx1pZKcCC8Eo2NK9XY1iX3djbjYLnaJm0hjABRAnA";
+const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || "https://hhvchrojexhjdrwtsejd.supabase.co";
+const SUPABASE_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhodmNocm9qZXhoamRyd3RzZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA2NTksImV4cCI6MjA5ODM5NjY1OX0.UzIx1pZKcCC8Eo2NK9XY1iX3djbjYLnaJm0hjABRAnA";
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DB_KEYS = {
@@ -151,9 +151,13 @@ export default function App() {
   // Interactive Premium Features States
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminMode, setIsAdminMode] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [adminUser, setAdminUser] = useState('');
-  const [adminPass, setAdminPass] = useState('');
+  const [session, setSession] = useState<any>(null);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname + window.location.hash);
+  const [faqs, setFaqs] = useState<FAQItem[]>([]);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authLoading, setAuthLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isBanned, setIsBanned] = useState(false);
   const [spamCounter, setSpamCounter] = useState(0);
@@ -207,6 +211,36 @@ export default function App() {
     msg: '',
     type: 'info'
   });
+
+  // Listen to path changes and routing triggers
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname + window.location.hash);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
+
+  // Listen to Supabase Auth state changes
+  useEffect(() => {
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsAdminMode(!!session);
+    });
+
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setIsAdminMode(!!session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Load configuration from dynamic path or query parameter
   useEffect(() => {
@@ -338,6 +372,8 @@ export default function App() {
       setPolling(loadedPoll);
       const loadedReqs = await getFromDB("mod_requests", requests);
       setRequests(loadedReqs);
+      const loadedFaqs = await getFromDB("faqs_db", DEFAULT_FAQS);
+      setFaqs(loadedFaqs);
 
       // System Preferences / Automatic Dark Mode
       const savedTheme = localStorage.getItem('axel_theme');
@@ -363,11 +399,6 @@ export default function App() {
       const searchCache = localStorage.getItem('recent_searches');
       if (searchCache) {
         setRecentSearches(JSON.parse(searchCache));
-      }
-
-      // Restore session log state
-      if (sessionStorage.getItem('admin_logged') === 'true') {
-        setIsAdminMode(true);
       }
 
       // Banned state check
@@ -968,26 +999,87 @@ export default function App() {
     showToast("Seluruh database berhasil dipulihkan!", "success");
   };
 
-  const attemptLogin = () => {
-    if (adminUser === "axeluf" && adminPass === "brandalz70") {
-      setIsAdminMode(true);
-      sessionStorage.setItem('admin_logged', 'true');
-      setShowLoginModal(false);
-      setAdminUser('');
-      setAdminPass('');
-      playSynth('success');
-      showToast("Selamat Datang Kembali, Admin Utama!", "success");
-    } else {
-      playSynth('delete');
-      showToast("Kredensial login salah!", "error");
+  const handleLogout = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+      setIsAdminMode(false);
+      showToast("Sesi admin ditutup.", "info");
+      playSynth('click');
+    } catch (err) {
+      showToast("Gagal melakukan keluar sesi.", "error");
     }
   };
 
-  const handleLogout = () => {
-    setIsAdminMode(false);
-    sessionStorage.removeItem('admin_logged');
-    showToast("Sesi admin ditutup.", "info");
+  const handleSaveFaqs = (updatedFaqs: FAQItem[]) => {
+    setFaqs(updatedFaqs);
+    writeToDB("faqs_db", updatedFaqs);
+    showToast("Daftar FAQ berhasil diperbarui!", "success");
+  };
+
+  const handleSavePolling = (poll: PollingTopic) => {
+    setPolling(poll);
+    writeToDB("community_polling", poll);
+    showToast("Polling kuesioner diperbarui!", "success");
+  };
+
+  const handleSaveRequest = (req: RequestMod, index?: number) => {
+    let nextReqs = [...requests];
+    if (index !== undefined) {
+      nextReqs[index] = req;
+      showToast("Permintaan Mod diperbarui!", "success");
+    } else {
+      nextReqs.unshift(req);
+      showToast("Permintaan Mod ditambahkan!", "success");
+    }
+    setRequests(nextReqs);
+    writeToDB("mod_requests", nextReqs);
+  };
+
+  const handleDeleteRequest = (id: string) => {
+    const nextReqs = requests.filter((r) => r.id !== id);
+    setRequests(nextReqs);
+    writeToDB("mod_requests", nextReqs);
+    showToast("Permintaan Mod berhasil dihapus!", "info");
+  };
+
+  const handleAuthAction = async () => {
+    if (!authEmail || !authPassword) {
+      showToast("Email dan password wajib diisi!", "error");
+      playSynth('delete');
+      return;
+    }
+
+    setAuthLoading(true);
     playSynth('click');
+
+    try {
+      if (authMode === 'login') {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        showToast("Login Berhasil! Selamat datang di Panel Admin.", "success");
+        playSynth('success');
+        setAuthEmail('');
+        setAuthPassword('');
+      } else {
+        const { error } = await supabaseClient.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        showToast("Registrasi Berhasil! Sesi Anda telah dibuat.", "success");
+        playSynth('success');
+        setAuthEmail('');
+        setAuthPassword('');
+      }
+    } catch (err: any) {
+      showToast(err.message || "Gagal memproses autentikasi.", "error");
+      playSynth('delete');
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   // ======================================================================
@@ -1411,74 +1503,32 @@ export default function App() {
 
               <div className="border-t-2 border-dashed border-black pt-3 mt-auto">
                 {isAdminMode ? (
-                  <button
-                    onClick={handleLogout}
-                    className="w-full bg-black text-[#A3FFD6] font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg"
-                  >
-                    🚪 KELUAR MODE ADMIN
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setShowLoginModal(true);
-                      setIsSidebarOpen(false);
-                      playSynth('click');
-                    }}
-                    className="w-full bg-[#4CCD99] text-black font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg"
-                  >
-                    🔑 LOGIN MODE ADMIN
-                  </button>
-                )}
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        window.location.hash = '#logy';
+                        setIsSidebarOpen(false);
+                        playSynth('click');
+                      }}
+                      className="w-full bg-[#A3FFD6] text-black font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs"
+                    >
+                      🛠️ KELOLA PORTAL (ADMIN)
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsSidebarOpen(false);
+                      }}
+                      className="w-full bg-black text-white font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs"
+                    >
+                      🚪 KELUAR SESI ADMIN
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
         </>
-      )}
-
-      {/* LOGIN MODAL */}
-      {showLoginModal && (
-        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#A3FFD6] text-black border-3 border-black p-5 relative max-w-sm w-full rounded-2xl shadow-[6px_6px_0px_0px_#000000] transform rotate-1">
-            <button
-              onClick={() => {
-                setShowLoginModal(false);
-                playSynth('click');
-              }}
-              className="absolute -top-3 -right-3 bg-white border-2 border-black w-8 h-8 flex items-center justify-center font-bold hover:bg-[#4CCD99] rounded-full shadow-[2px_2px_0_0_#000000]"
-            >
-              ✕
-            </button>
-            <h2 className="font-syne font-extrabold text-lg mb-4 uppercase tracking-tight text-black">🔐 VERIFIKASI AKSES ADMIN</h2>
-            <div className="space-y-3.5 text-xs text-black">
-              <div>
-                <label className="block font-bold mb-0.5 uppercase tracking-wider text-[8px] text-gray-700">Username</label>
-                <input
-                  type="text"
-                  value={adminUser}
-                  onChange={(e) => setAdminUser(e.target.value)}
-                  placeholder="Contoh: axeluf"
-                  className="w-full border-2 border-black p-2 font-bold bg-white focus:outline-none rounded-lg text-black"
-                />
-              </div>
-              <div>
-                <label className="block font-bold mb-0.5 uppercase tracking-wider text-[8px] text-gray-700">Password</label>
-                <input
-                  type="password"
-                  value={adminPass}
-                  onChange={(e) => setAdminPass(e.target.value)}
-                  placeholder="Sandi keamanan..."
-                  className="w-full border-2 border-black p-2 font-bold bg-white focus:outline-none rounded-lg text-black"
-                />
-              </div>
-              <button
-                onClick={attemptLogin}
-                className="w-full bg-[#2E8B6E] text-white font-extrabold uppercase py-2.5 border-2 border-black brutal-shadow-sm active:translate-y-0.5 rounded-xl text-xs"
-              >
-                MASUK MODE KONTROL ⚡
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* PORTAL CONTAINER VIEW */}
@@ -1521,8 +1571,130 @@ export default function App() {
           </div>
         </div>
 
-        {/* MAINTENANCE SCREEN RECOVERY */}
-        {maintenanceMode && !isAdminMode ? (
+        {/* DISPATCH TO SECRET PATH /logy OR PUBLIC PORTAL */}
+        {currentPath.includes('/logy') || currentPath.includes('#logy') ? (
+          <div className="bg-white border-3 border-black p-6 rounded-2xl brutal-shadow my-6 text-black">
+            <div className="flex justify-between items-center border-b-3 border-black pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-3xl">🔐</span>
+                <div>
+                  <h2 className="font-syne font-extrabold text-xl uppercase leading-none text-black">LOGY PANEL</h2>
+                  <p className="text-[9px] font-mono text-gray-400 mt-1 uppercase">SUPABASE SECURE BACKEND AUTH</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  window.location.hash = '#';
+                  playSynth('click');
+                }}
+                className="bg-[#4CCD99] text-black border-2 border-black hover:bg-[#3dbd8c] font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl shadow-sm cursor-pointer"
+              >
+                🏠 Beranda
+              </button>
+            </div>
+
+            {isAdminMode ? (
+              <div className="space-y-6">
+                <div className="bg-[#A3FFD6]/40 border-2 border-dashed border-[#2E8B6E] p-4 rounded-xl flex items-center justify-between text-black">
+                  <div className="text-xs">
+                    <p className="font-extrabold text-[#2E8B6E] uppercase">🔑 AKSES TERVERIFIKASI</p>
+                    <p className="font-mono text-gray-600 mt-0.5">{session?.user?.email}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="bg-black text-[#A3FFD6] hover:bg-zinc-800 font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl border-2 border-black shadow-sm cursor-pointer"
+                  >
+                    🚪 Keluar Sesi
+                  </button>
+                </div>
+
+                <AdminPanel
+                  mods={mods}
+                  credits={credits}
+                  presets={presets}
+                  faqs={faqs}
+                  polling={polling}
+                  requests={requests}
+                  onSaveMod={handleSaveModItem}
+                  onDeleteMod={handleDeleteModItem}
+                  onSaveBranding={handleSaveBranding}
+                  onSaveSafelink={handleSaveSafelink}
+                  onSaveBackground={handleSaveBackground}
+                  onResetBackground={handleResetBackground}
+                  onSaveBanner={handleSaveBanner}
+                  onAddCredit={handleAddCredit}
+                  onDeleteCredit={handleDeleteCredit}
+                  onAddPreset={handleAddPreset}
+                  onDeletePreset={handleDeletePreset}
+                  onBulkDelete={handleBulkDelete}
+                  onBulkAddTag={handleBulkAddTag}
+                  onBulkDraft={handleBulkDraft}
+                  onRestoreAllData={handleRestoreAllData}
+                  onSaveFaqs={handleSaveFaqs}
+                  onSavePolling={handleSavePolling}
+                  onSaveRequest={handleSaveRequest}
+                  onDeleteRequest={handleDeleteRequest}
+                  visitorData={STATIC_VISITOR_STATS}
+                  soundPlay={soundPlay}
+                />
+              </div>
+            ) : (
+              <div className="max-w-sm mx-auto my-8">
+                <div className="bg-[#FFF200]/10 border-2 border-dashed border-black p-3.5 rounded-xl mb-6 text-center text-black">
+                  <span className="text-sm font-bold block">⚠️ DILINDUNGI SISTEM KEAMANAN</span>
+                  <span className="text-[9px] text-gray-500 font-medium block mt-0.5">Silakan masuk menggunakan kredensial database Supabase Anda untuk mengakses panel administrasi.</span>
+                </div>
+
+                <div className="flex border-2 border-black rounded-xl overflow-hidden mb-4 shadow-sm">
+                  <button
+                    onClick={() => { setAuthMode('login'); playSynth('click'); }}
+                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'login' ? 'bg-black text-[#A3FFD6]' : 'bg-white text-black'}`}
+                  >
+                    Masuk (Login)
+                  </button>
+                  <button
+                    onClick={() => { setAuthMode('signup'); playSynth('click'); }}
+                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'signup' ? 'bg-black text-[#A3FFD6]' : 'bg-white text-black'}`}
+                  >
+                    Daftar (Sign Up)
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase text-gray-500 mb-1">ALAMAT EMAIL</label>
+                    <input
+                      type="email"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      placeholder="admin@axeluf.com"
+                      className="w-full border-2 border-black p-2.5 font-bold text-xs bg-zinc-50 focus:outline-none rounded-xl text-black shadow-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase text-gray-500 mb-1">PASSWORD</label>
+                    <input
+                      type="password"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      placeholder="Masukkan kata sandi..."
+                      className="w-full border-2 border-black p-2.5 font-bold text-xs bg-zinc-50 focus:outline-none rounded-xl text-black shadow-sm"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleAuthAction}
+                    disabled={authLoading}
+                    className="w-full bg-[#4CCD99] text-black border-2 border-black font-extrabold py-3 rounded-xl brutal-shadow-sm hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_#000000] active:translate-y-1 transition-all text-xs uppercase disabled:opacity-50 cursor-pointer"
+                  >
+                    {authLoading ? 'MEMPROSES...' : authMode === 'login' ? 'MASUK KE DASHBOARD 🚀' : 'DAFTAR AKUN ADMIN ➕'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : maintenanceMode && !isAdminMode ? (
           <div className="bg-white border-3 border-black p-8 text-center rounded-2xl brutal-shadow my-12 text-black">
             <span className="text-6xl block mb-4 animate-bounce">🚧</span>
             <h2 className="font-syne font-extrabold text-2xl uppercase">MODE PEMELIHARAAN AKTIF</h2>
@@ -1535,32 +1707,6 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* ADMIN DASHBOARD COMPONENT PANEL */}
-            {isAdminMode && (
-              <AdminPanel
-                mods={mods}
-                credits={credits}
-                presets={presets}
-                onSaveMod={handleSaveModItem}
-                onDeleteMod={handleDeleteModItem}
-                onSaveBranding={handleSaveBranding}
-                onSaveSafelink={handleSaveSafelink}
-                onSaveBackground={handleSaveBackground}
-                onResetBackground={handleResetBackground}
-                onSaveBanner={handleSaveBanner}
-                onAddCredit={handleAddCredit}
-                onDeleteCredit={handleDeleteCredit}
-                onAddPreset={handleAddPreset}
-                onDeletePreset={handleDeletePreset}
-                onBulkDelete={handleBulkDelete}
-                onBulkAddTag={handleBulkAddTag}
-                onBulkDraft={handleBulkDraft}
-                onRestoreAllData={handleRestoreAllData}
-                visitorData={STATIC_VISITOR_STATS}
-                soundPlay={soundPlay}
-              />
-            )}
-
             {/* MAIN PUBLIC WEB VIEW */}
             <main className="text-black space-y-6">
               {/* Active Filtering Category Badge */}
@@ -1721,7 +1867,7 @@ export default function App() {
 
               {/* COMMUNITY SURVEYS & USER REQUESTS */}
               <FAQPolling
-                faqs={DEFAULT_FAQS}
+                faqs={faqs}
                 polling={polling}
                 onVotePolling={handleVotePolling}
                 requests={requests}
