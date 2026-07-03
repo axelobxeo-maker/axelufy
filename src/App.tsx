@@ -47,6 +47,7 @@ import {
   UserCheck,
   Gamepad2
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import {
   ModItem,
   CreditItem,
@@ -136,6 +137,7 @@ export default function App() {
   const [webBackgroundImage, setWebBackgroundImage] = useState('none');
   const [webBroadcastText, setWebBroadcastText] = useState('DATABASE DISEGARKAN: Kami bermigrasi ke kluster server baru yang lebih stabil dan super ringan! | UPDATE: Semua MLBB Skin Mod aktif untuk patch terbaru!');
   const [safelinkTime, setSafelinkTime] = useState(5);
+  const [webBacksoundUrl, setWebBacksoundUrl] = useState('');
 
   // Search & Navigation
   const [searchQuery, setSearchQuery] = useState('');
@@ -197,6 +199,43 @@ export default function App() {
 
   // Audio Synth context
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Play/pause backsound on soundEnabled or backsoundUrl changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (soundEnabled && webBacksoundUrl) {
+      audio.src = webBacksoundUrl;
+      audio.loop = true;
+      audio.volume = 0.45;
+      
+      const playAudio = () => {
+        audio.play().catch(err => {
+          console.log("Interaction required to start audio playback.");
+        });
+      };
+      
+      playAudio();
+
+      const handleUserInteraction = () => {
+        playAudio();
+        window.removeEventListener('click', handleUserInteraction);
+        window.removeEventListener('touchstart', handleUserInteraction);
+      };
+
+      window.addEventListener('click', handleUserInteraction);
+      window.addEventListener('touchstart', handleUserInteraction);
+
+      return () => {
+        window.removeEventListener('click', handleUserInteraction);
+        window.removeEventListener('touchstart', handleUserInteraction);
+      };
+    } else {
+      audio.pause();
+    }
+  }, [soundEnabled, webBacksoundUrl]);
 
   // Speech Recognition support
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -387,6 +426,8 @@ export default function App() {
       setWebBroadcastText(bcast);
       const sTime = await getFromDB("web_safelink_time", "5");
       setSafelinkTime(parseInt(sTime) || 5);
+      const bSound = await getFromDB("web_backsound_url", "");
+      setWebBacksoundUrl(bSound);
 
       // Load Lists
       const loadedMods = await getFromDB(DB_KEYS.MODS, DEFAULT_MODS);
@@ -1030,6 +1071,12 @@ export default function App() {
     showToast(`Berhasil mengubah status draf massal ${indices.length} mod!`, "success");
   };
 
+  const handleSaveBacksound = async (url: string) => {
+    setWebBacksoundUrl(url);
+    await writeToDB("web_backsound_url", url);
+    showToast("URL Backsound Berhasil Disimpan!", "success");
+  };
+
   const handleRestoreAllData = (backup: any) => {
     if (backup.mods) { setMods(backup.mods); writeToDB(DB_KEYS.MODS, backup.mods); }
     if (backup.credits) { setCredits(backup.credits); writeToDB(DB_KEYS.CREDITS, backup.credits); }
@@ -1530,7 +1577,12 @@ export default function App() {
       {/* PORTAL CONTAINER VIEW */}
       <div className="max-w-3xl mx-auto px-3.5 pt-4">
         {/* WEBPAGE BRANDING SECTION */}
-        <div className="w-full bg-white border-3 border-black brutal-shadow mb-6 overflow-hidden rounded-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: -30, rotateX: -4, transformPerspective: 1000 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full bg-white border-3 border-black brutal-shadow mb-6 overflow-hidden rounded-2xl"
+        >
           <div className="relative w-full h-36 sm:h-48 bg-zinc-900 border-b-3 border-black overflow-hidden flex items-center justify-center">
             {isVideoUrl(webBannerImage) ? (
               <video
@@ -1589,43 +1641,49 @@ export default function App() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 items-center">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       playSynth('click');
                       setIsSidebarOpen(true);
                     }}
-                    className="bg-theme-bg hover:bg-theme-accent text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase shadow-sm flex items-center gap-1 active:translate-y-0.5 cursor-pointer"
+                    className="bg-theme-bg hover:bg-theme-accent text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase shadow-sm flex items-center gap-1 cursor-pointer"
                   >
                     <Menu className="w-3.5 h-3.5" />
                     <span>MENU</span>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setSoundEnabled(!soundEnabled);
                       showToast(soundEnabled ? 'Suara Dinonaktifkan' : 'Suara Diaktifkan', 'info');
                       playSynth('click');
                     }}
-                    className={`px-2 py-1 border-2 border-black rounded-lg hover:bg-zinc-100 text-[9px] font-extrabold flex items-center gap-1 active:translate-y-0.5 cursor-pointer ${
+                    className={`px-2 py-1 border-2 border-black rounded-lg hover:bg-zinc-100 text-[9px] font-extrabold flex items-center gap-1 cursor-pointer ${
                       soundEnabled ? 'bg-zinc-900 text-theme-accent' : 'bg-white text-gray-500'
                     }`}
                   >
                     {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-theme-accent" /> : <VolumeX className="w-3.5 h-3.5" />}
                     <span>SUARA: {soundEnabled ? 'ON' : 'OFF'}</span>
-                  </button>
+                  </motion.button>
                   {isInstallable && (
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={handleInstallApp}
-                      className="bg-[#FFF200] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-yellow-400 active:translate-y-0.5 shadow-sm flex items-center gap-1 cursor-pointer"
+                      className="bg-[#FFF200] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase hover:bg-yellow-400 shadow-sm flex items-center gap-1 cursor-pointer"
                     >
                       <Download className="w-3.5 h-3.5 text-black" />
                       <span>Install PWA</span>
-                    </button>
+                    </motion.button>
                   )}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* DISPATCH TO SECRET PATH /logy OR PUBLIC PORTAL */}
         {currentPath.includes('/logy') || currentPath.includes('#logy') ? (
@@ -1701,6 +1759,16 @@ export default function App() {
                   soundPlay={soundPlay}
                   isTableMissing={isTableMissing}
                   dbWriteError={dbWriteError}
+                  webTitle={webTitle}
+                  webSubtitle={webSubtitle}
+                  webLogo={webLogo}
+                  profileAlignment={profileAlignment}
+                  webBannerImage={webBannerImage}
+                  webBackgroundImage={webBackgroundImage}
+                  webBroadcastText={webBroadcastText}
+                  safelinkTime={safelinkTime}
+                  webBacksoundUrl={webBacksoundUrl}
+                  onSaveBacksound={handleSaveBacksound}
                 />
               </div>
             ) : (
@@ -1854,7 +1922,12 @@ export default function App() {
             <main className="text-black space-y-6">
               {/* Active Filtering Category Badge */}
               {activeCategoryFilter && (
-                <div className="bg-black text-white p-3.5 brutal-border brutal-shadow-sm flex items-center justify-between rounded-xl">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="bg-black text-white p-3.5 brutal-border brutal-shadow-sm flex items-center justify-between rounded-xl"
+                >
                   <div className="flex items-center gap-2">
                     <Folder className="w-4 h-4 text-[#A3FFD6]" />
                     <span className="font-extrabold text-xs uppercase text-white">
@@ -1864,20 +1937,28 @@ export default function App() {
                       </span>
                     </span>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setActiveCategoryFilter('');
                       playSynth('click');
                     }}
-                    className="bg-[#4CCD99] text-black border-2 border-black hover:bg-[#3dbd8c] font-extrabold text-[9px] px-2.5 py-0.5 uppercase rounded-lg shadow-sm active:translate-y-0.5"
+                    className="bg-[#4CCD99] text-black border-2 border-black hover:bg-[#3dbd8c] font-extrabold text-[9px] px-2.5 py-0.5 uppercase rounded-lg shadow-sm cursor-pointer"
                   >
                     Hapus Filter ✕
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               )}
 
               {/* LIVE SEARCH & POPULAR SEARCH bento box */}
-              <div className="bg-white border-3 border-black p-4 rounded-2xl brutal-shadow text-black space-y-3">
+              <motion.div
+                initial={{ opacity: 0, y: 50, rotateX: 5, transformPerspective: 1000 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="bg-white border-3 border-black p-4 rounded-2xl brutal-shadow text-black space-y-3"
+              >
                 {/* Custom input bar */}
                 <div className="flex items-center border-3 border-black p-0.5 rounded-xl bg-zinc-50 shadow-sm relative text-black">
                   <Search className="w-4 h-4 text-black mx-3 shrink-0" />
@@ -1890,16 +1971,18 @@ export default function App() {
                   />
 
                   {/* Voice recognition trigger */}
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleVoiceSearch}
-                    className={`mr-2 p-1.5 rounded-lg border-2 border-black font-extrabold transition-all text-[11px] flex items-center gap-1 ${
+                    className={`mr-2 p-1.5 rounded-lg border-2 border-black font-extrabold transition-all text-[11px] flex items-center gap-1 cursor-pointer ${
                       voiceSearchActive ? 'bg-red-500 text-white animate-pulse' : 'bg-[#A3FFD6] hover:bg-[#4CCD99] text-black'
                     }`}
                     title="Pencarian Suara"
                   >
                     <Mic className="w-3.5 h-3.5" />
                     <span>{voiceSearchActive ? 'LISTEN' : 'MIC'}</span>
-                  </button>
+                  </motion.button>
                 </div>
 
                 {/* Search suggestion drop-down */}
@@ -1907,18 +1990,19 @@ export default function App() {
                   <div className="border-2 border-black bg-white p-2 rounded-xl text-[10px] font-bold space-y-1.5 shadow-sm">
                     <span className="text-gray-400 text-[8px] uppercase block mb-1">Rekomendasi pencarian:</span>
                     {searchSuggestions.map((sug, i) => (
-                      <button
+                      <motion.button
                         key={i}
+                        whileHover={{ x: 4, backgroundColor: "rgba(163, 255, 214, 0.2)" }}
                         onClick={() => {
                           handleExecuteSearch(sug);
                           setSearchSuggestions([]);
                           playSynth('click');
                         }}
-                        className="w-full text-left p-1 rounded hover:bg-[#A3FFD6]/30 text-black uppercase flex items-center gap-1.5"
+                        className="w-full text-left p-1 rounded text-black uppercase flex items-center gap-1.5 cursor-pointer"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
                         <span>{sug}</span>
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 )}
@@ -1928,16 +2012,18 @@ export default function App() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-gray-400 uppercase">POPULER:</span>
                     {['MLBB', 'GAME', 'APK', 'SKIN'].map((pop) => (
-                      <button
+                      <motion.button
                         key={pop}
+                        whileHover={{ scale: 1.05, backgroundColor: "#A3FFD6" }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => {
                           handleExecuteSearch(pop);
                           playSynth('click');
                         }}
-                        className="bg-zinc-100 hover:bg-[#A3FFD6] border border-black px-2 py-0.5 rounded uppercase"
+                        className="bg-zinc-100 border border-black px-2 py-0.5 rounded uppercase cursor-pointer"
                       >
                         {pop}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
 
@@ -1945,35 +2031,47 @@ export default function App() {
                     <div className="flex items-center gap-2 flex-wrap text-black">
                       <span className="text-gray-400 uppercase">TERBARU:</span>
                       {recentSearches.map((rec, i) => (
-                        <button
+                        <motion.button
                           key={i}
+                          whileHover={{ scale: 1.05, backgroundColor: "rgba(0,0,0,0.05)" }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => {
                             setSearchQuery(rec);
                             playSynth('click');
                           }}
-                          className="bg-zinc-100 border border-black/40 px-1.5 py-0.5 rounded text-gray-600"
+                          className="bg-zinc-100 border border-black/40 px-1.5 py-0.5 rounded text-gray-600 cursor-pointer"
                         >
                           {rec}
-                        </button>
+                        </motion.button>
                       ))}
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={clearRecentSearches}
-                        className="text-red-500 underline ml-1 text-[8px]"
+                        className="text-red-500 underline ml-1 text-[8px] cursor-pointer"
                       >
                         Hapus Semua
-                      </button>
+                      </motion.button>
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Informative notification bento block */}
-              <div className="bg-[#4CCD99] border-3 border-black brutal-shadow-sm p-3.5 font-extrabold flex gap-3 items-center rounded-2xl">
+              <motion.div
+                initial={{ opacity: 0, y: 40, rotateX: 5, transformPerspective: 1000 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                className="bg-[#4CCD99] border-3 border-black brutal-shadow-sm p-3.5 font-extrabold flex gap-3 items-center rounded-2xl"
+              >
                 <Bell className="w-6 h-6 text-black shrink-0 animate-bounce" />
                 <p className="text-[10px] sm:text-xs text-black leading-snug">
                   Ada kendala link error, tautan mati, atau terdeteksi password salah? Hubungi tim support kami segera dengan memberikan laporan kerusakan pada tombol 'Lapor Mati' di tiap mod!
                 </p>
-              </div>
+              </motion.div>
+
+
 
               {/* MOD CARDS GRID SECTION */}
               <div className="space-y-6">
@@ -1996,7 +2094,14 @@ export default function App() {
                   return (
                     <>
                       {displayedMods.map((item, idx) => (
-                        <div id={`mod-card-${idx}`} key={item.id || idx}>
+                        <motion.div
+                          id={`mod-card-${idx}`}
+                          key={item.id || idx}
+                          initial={{ opacity: 0, y: 40 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true, margin: "-100px" }}
+                          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        >
                           <ModCard
                             mod={item}
                             cardIndex={idx}
@@ -2013,23 +2118,30 @@ export default function App() {
                             triggerSafelink={triggerSafelink}
                             soundPlay={soundPlay}
                           />
-                        </div>
+                        </motion.div>
                       ))}
 
                       {currentTab === 'home' && visibleMods.length > 3 && (
-                        <div className="pt-4 text-center">
-                          <button
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true, margin: "-60px" }}
+                          className="pt-4 text-center"
+                        >
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => {
                               playSynth('success');
                               setCurrentTab('mods');
                               window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
-                            className="w-full inline-flex items-center justify-center gap-2 bg-theme-accent hover:bg-theme-bg text-black font-extrabold text-xs uppercase px-6 py-4 border-3 border-black brutal-shadow-sm hover:translate-y-[-2px] active:translate-y-1 transition-all rounded-xl cursor-pointer"
+                            className="w-full inline-flex items-center justify-center gap-2 bg-theme-accent hover:bg-theme-bg text-black font-extrabold text-xs uppercase px-6 py-4 border-3 border-black brutal-shadow-sm transition-all rounded-xl cursor-pointer"
                           >
                             <span>More (Lihat {visibleMods.length - 3} Mod Lainnya)</span>
                             <ArrowRight className="w-4 h-4" />
-                          </button>
-                        </div>
+                          </motion.button>
+                        </motion.div>
                       )}
                     </>
                   );
@@ -2067,22 +2179,30 @@ export default function App() {
         </div>
 
         {/* FOOTER & SOCIAL LINKS */}
-        <footer className="mt-14 bg-white text-black border-3 border-black brutal-shadow p-6 text-center font-bold rounded-2xl">
+        <motion.footer
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="mt-14 bg-white text-black border-3 border-black brutal-shadow p-6 text-center font-bold rounded-2xl"
+        >
           <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
             {credits.map((c, index) => (
-              <a
+              <motion.a
                 key={index}
                 href={c.url}
                 target="_blank"
                 rel="noreferrer"
+                whileHover={{ scale: 1.05, rotate: index % 2 === 0 ? 1 : -1 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => playSynth('click')}
                 style={{ backgroundColor: c.color }}
-                className="px-3.5 py-1.5 border-2 border-black brutal-shadow-sm brutal-btn-sm flex items-center gap-1.5 text-[10px] uppercase text-black font-extrabold rounded-lg"
+                className="px-3.5 py-1.5 border-2 border-black brutal-shadow-sm brutal-btn-sm flex items-center gap-1.5 text-[10px] uppercase text-black font-extrabold rounded-lg cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5 text-black" />
                 <span>{c.platform}:</span>
                 <span className="font-black underline">{c.handle}</span>
-              </a>
+              </motion.a>
             ))}
           </div>
 
@@ -2092,60 +2212,78 @@ export default function App() {
           <p className="text-[9px] text-gray-500 mt-2 font-mono uppercase tracking-wider">
             HYBRID SYNC CLUSTER STATE: ACTIVE SECURE • 10.000+ CACHED DATA
           </p>
-        </footer>
+        </motion.footer>
 
         {/* BOTTOM NAVIGATION BAR (WhatsApp style, with MENU, HOME, MOD) */}
-        <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white border-t-3 border-black py-3 px-4 shadow-[0_-4px_10px_rgba(0,0,0,0.08)]">
-          <div className="max-w-md mx-auto flex items-center justify-around">
-            {/* MENU TAB */}
-            <button
-              onClick={() => {
-                playSynth('click');
-                setIsSidebarOpen(true);
-              }}
-              className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
-            >
-              <div className="w-12 h-12 rounded-xl border-2 border-black bg-theme-accent hover:bg-theme-dark text-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] active:translate-y-0.5 transition-all">
-                <Menu className="w-5 h-5 text-black" />
-              </div>
-              <span>MENU</span>
-            </button>
+        {!(currentPath.includes('/logy') || currentPath.includes('#logy')) && (
+          <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white border-t-3 border-black py-3 px-4 shadow-[0_-4px_10px_rgba(0,0,0,0.08)]">
+            <div className="max-w-md mx-auto flex items-center justify-around">
+              {/* MENU TAB */}
+              <button
+                onClick={() => {
+                  playSynth('click');
+                  setIsSidebarOpen(true);
+                }}
+                className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+              >
+                <motion.div 
+                  whileHover={{ scale: 1.1, rotate: -3 }}
+                  whileTap={{ scale: 0.85 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                  className="w-12 h-12 rounded-xl border-2 border-black bg-theme-accent hover:bg-theme-dark text-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] transition-all"
+                >
+                  <Menu className="w-5 h-5 text-black" />
+                </motion.div>
+                <span>MENU</span>
+              </button>
 
-            {/* HOME TAB */}
-            <button
-              onClick={() => {
-                playSynth('click');
-                setCurrentTab('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
-            >
-              <div className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] active:translate-y-0.5 transition-all ${
-                currentTab === 'home' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
-              }`}>
-                <Home className="w-5 h-5 text-black" />
-              </div>
-              <span className={currentTab === 'home' ? 'text-black font-black' : 'text-zinc-500'}>HOME</span>
-            </button>
+              {/* HOME TAB */}
+              <button
+                onClick={() => {
+                  playSynth('click');
+                  setCurrentTab('home');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+              >
+                <motion.div 
+                  whileHover={{ scale: 1.1, rotate: 3 }}
+                  whileTap={{ scale: 0.85 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                  className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] transition-all ${
+                    currentTab === 'home' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
+                  }`}
+                >
+                  <Home className="w-5 h-5 text-black" />
+                </motion.div>
+                <span className={currentTab === 'home' ? 'text-black font-black' : 'text-zinc-500'}>HOME</span>
+              </button>
 
-            {/* MOD TAB */}
-            <button
-              onClick={() => {
-                playSynth('click');
-                setCurrentTab('mods');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
-            >
-              <div className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] active:translate-y-0.5 transition-all ${
-                currentTab === 'mods' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
-              }`}>
-                <Gamepad2 className="w-5 h-5 text-black" />
-              </div>
-              <span className={currentTab === 'mods' ? 'text-black font-black' : 'text-zinc-500'}>MOD</span>
-            </button>
+              {/* MOD TAB */}
+              <button
+                onClick={() => {
+                  playSynth('click');
+                  setCurrentTab('mods');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+              >
+                <motion.div 
+                  whileHover={{ scale: 1.1, rotate: -3 }}
+                  whileTap={{ scale: 0.85 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                  className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] transition-all ${
+                    currentTab === 'mods' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
+                  }`}
+                >
+                  <Gamepad2 className="w-5 h-5 text-black" />
+                </motion.div>
+                <span className={currentTab === 'mods' ? 'text-black font-black' : 'text-zinc-500'}>MOD</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+        <audio ref={audioRef} style={{ display: 'none' }} />
       </div>
     </div>
   );

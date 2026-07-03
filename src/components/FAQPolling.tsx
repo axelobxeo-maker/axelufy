@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { FAQItem, PollingTopic, RequestMod } from '../types';
 import { BarChart2, HelpCircle, Plus, Minus, Send, Flame, CheckCircle2, ThumbsUp, Lock } from 'lucide-react';
 
@@ -44,7 +45,13 @@ export default function FAQPolling({
       {/* 2 Column Layout for Polling and FAQ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Polling Widget */}
-        <div className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000] flex flex-col justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: 50, rotateX: 6, transformPerspective: 1000 }}
+          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000] flex flex-col justify-between"
+        >
           <div>
             <div className="flex items-center gap-1.5 mb-2 text-[#2E8B6E]">
               <BarChart2 className="w-5 h-5 text-black" />
@@ -58,10 +65,12 @@ export default function FAQPolling({
               {polling.options.map((opt) => {
                 const pct = polling.totalVotes > 0 ? Math.round((opt.votes / polling.totalVotes) * 100) : 0;
                 return (
-                  <button
+                  <motion.button
                     key={opt.id}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => onVotePolling(opt.id)}
-                    className="w-full text-left p-2.5 border-2 border-black rounded-lg bg-zinc-50 hover:bg-[#A3FFD6]/20 transition-all text-[11px] font-bold relative overflow-hidden group active:translate-y-0.5"
+                    className="w-full text-left p-2.5 border-2 border-black rounded-lg bg-zinc-50 hover:bg-[#A3FFD6]/20 transition-all text-[11px] font-bold relative overflow-hidden group cursor-pointer block"
                   >
                     {/* Progress Fill Background */}
                     <div
@@ -74,7 +83,7 @@ export default function FAQPolling({
                         {opt.votes} Suara ({pct}%)
                       </span>
                     </div>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -83,10 +92,16 @@ export default function FAQPolling({
             <Lock className="w-3 h-3 text-gray-400" />
             <span>Total polling terdaftar: {polling.totalVotes} Suara • Klik pilihan untuk memilih!</span>
           </div>
-        </div>
+        </motion.div>
 
         {/* FAQ Widget */}
-        <div className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000]">
+        <motion.div
+          initial={{ opacity: 0, y: 50, rotateX: 6, transformPerspective: 1000 }}
+          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000]"
+        >
           <div className="flex items-center gap-1.5 mb-3">
             <HelpCircle className="w-5 h-5 text-black" />
             <h4 className="font-syne font-extrabold text-sm uppercase">FAQ (Tanya Jawab)</h4>
@@ -98,29 +113,41 @@ export default function FAQPolling({
               const isOpen = openFAQIndex === index;
               return (
                 <div key={index} className="border-2 border-black rounded-lg overflow-hidden">
-                  <button
+                  <motion.button
+                    whileHover={{ backgroundColor: "#f4f4f5" }}
                     onClick={() => setOpenFAQIndex(isOpen ? null : index)}
-                    className="w-full text-left p-2.5 bg-zinc-50 font-extrabold text-[10px] uppercase flex justify-between items-center transition-all hover:bg-gray-100"
+                    className="w-full text-left p-2.5 bg-zinc-50 font-extrabold text-[10px] uppercase flex justify-between items-center transition-all cursor-pointer"
                   >
                     <span className="pr-4 leading-tight">{faq.question}</span>
                     <span className="shrink-0 text-xs">
                       {isOpen ? <Minus className="w-3.5 h-3.5 text-black" /> : <Plus className="w-3.5 h-3.5 text-black" />}
                     </span>
-                  </button>
+                  </motion.button>
                   {isOpen && (
-                    <div className="p-2.5 bg-white border-t-2 border-black text-[10px] text-gray-700 leading-relaxed font-semibold whitespace-pre-wrap">
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                      className="p-2.5 bg-white border-t-2 border-black text-[10px] text-gray-700 leading-relaxed font-semibold whitespace-pre-wrap"
+                    >
                       {faq.answer}
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Request Mod Widget */}
-      <div className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000]">
+      <motion.div
+        initial={{ opacity: 0, y: 55, rotateX: 5, transformPerspective: 1000 }}
+        whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000]"
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Submit Request Form */}
           <div className="md:col-span-1 space-y-3">
@@ -154,12 +181,14 @@ export default function FAQPolling({
                   className="w-full brutal-border-sm p-2 font-bold bg-white focus:outline-none focus:bg-[#A3FFD6]/20 text-black text-[10px] rounded-md"
                 />
               </div>
-              <button
+              <motion.button
                 type="submit"
-                className="w-full bg-[#FF71CD] text-black font-extrabold uppercase py-2 brutal-border-sm brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full bg-[#FF71CD] text-black font-extrabold uppercase py-2 brutal-border-sm brutal-shadow-sm brutal-btn-sm text-[10px] rounded-lg cursor-pointer"
               >
                 Kirim Permintaan
-              </button>
+              </motion.button>
             </form>
           </div>
 
@@ -196,14 +225,16 @@ export default function FAQPolling({
                           </div>
                           <span className="text-[8px] text-gray-400 font-bold block mt-0.5">{req.date}</span>
                         </div>
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => onUpvoteRequest(req.id)}
-                          className="bg-[#A3FFD6] hover:bg-[#4CCD99] text-black font-extrabold px-2 py-1 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] uppercase flex items-center gap-1 rounded-md shrink-0 active:translate-y-0.5"
+                          className="bg-[#A3FFD6] hover:bg-[#4CCD99] text-black font-extrabold px-2 py-1 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] uppercase flex items-center gap-1 rounded-md shrink-0 cursor-pointer"
                         >
                           <ThumbsUp className="w-3 h-3 text-black" />
                           <span>Upvote</span>
                           <span className="bg-black text-white px-1 brutal-border-sm text-[8px]">{req.votes}</span>
-                        </button>
+                        </motion.button>
                       </div>
                     ))
                 )}
@@ -211,7 +242,7 @@ export default function FAQPolling({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -79,6 +79,16 @@ interface AdminPanelProps {
   pinnedTags?: string[];
   onSavePinnedTags?: (tags: string[]) => void;
   onRenameCategoryGlobal?: (oldTag: string, newTag: string) => void;
+  webTitle?: string;
+  webSubtitle?: string;
+  webLogo?: string;
+  profileAlignment?: string;
+  webBannerImage?: string;
+  webBackgroundImage?: string;
+  webBroadcastText?: string;
+  safelinkTime?: number;
+  webBacksoundUrl?: string;
+  onSaveBacksound?: (url: string) => void;
 }
 
 export default function AdminPanel({
@@ -113,7 +123,17 @@ export default function AdminPanel({
   dbWriteError = null,
   pinnedTags = [],
   onSavePinnedTags = () => {},
-  onRenameCategoryGlobal = () => {}
+  onRenameCategoryGlobal = () => {},
+  webTitle = '',
+  webSubtitle = '',
+  webLogo = '',
+  profileAlignment = 'items-start text-left',
+  webBannerImage = '',
+  webBackgroundImage = '',
+  webBroadcastText = '',
+  safelinkTime: propSafelinkTime = 5,
+  webBacksoundUrl = '',
+  onSaveBacksound
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics' | 'faqs' | 'polling' | 'requests' | 'categories'>('mod');
 
@@ -142,16 +162,30 @@ export default function AdminPanel({
   const [customLinks, setCustomLinks] = useState<Array<{ label: string; url: string; iconType: string }>>([]);
 
   // Branding States
-  const [brandTitle, setBrandTitle] = useState('');
-  const [brandSubtitle, setBrandSubtitle] = useState('');
-  const [brandLogo, setBrandLogo] = useState('');
-  const [brandAlignment, setBrandAlignment] = useState('items-start text-left');
+  const [brandTitle, setBrandTitle] = useState(webTitle);
+  const [brandSubtitle, setBrandSubtitle] = useState(webSubtitle);
+  const [brandLogo, setBrandLogo] = useState(webLogo);
+  const [brandAlignment, setBrandAlignment] = useState(profileAlignment);
 
   // Announcement and Safelink States
-  const [broadcastText, setBroadcastText] = useState('');
-  const [safelinkTime, setSafelinkTime] = useState<number>(5);
-  const [bgUrl, setBgUrl] = useState('');
-  const [bannerUrl, setBannerUrl] = useState('');
+  const [broadcastText, setBroadcastText] = useState(webBroadcastText);
+  const [safelinkTime, setSafelinkTime] = useState<number>(propSafelinkTime);
+  const [bgUrl, setBgUrl] = useState(webBackgroundImage === 'none' ? '' : webBackgroundImage);
+  const [bannerUrl, setBannerUrl] = useState(webBannerImage);
+  const [backsoundUrl, setBacksoundUrl] = useState(webBacksoundUrl);
+
+  // Synchronize component state with prop settings updates
+  React.useEffect(() => {
+    if (webTitle) setBrandTitle(webTitle);
+    if (webSubtitle) setBrandSubtitle(webSubtitle);
+    if (webLogo) setBrandLogo(webLogo);
+    if (profileAlignment) setBrandAlignment(profileAlignment);
+    if (webBroadcastText) setBroadcastText(webBroadcastText);
+    if (propSafelinkTime !== undefined) setSafelinkTime(propSafelinkTime);
+    if (webBackgroundImage) setBgUrl(webBackgroundImage === 'none' ? '' : webBackgroundImage);
+    if (webBannerImage) setBannerUrl(webBannerImage);
+    if (webBacksoundUrl !== undefined) setBacksoundUrl(webBacksoundUrl);
+  }, [webTitle, webSubtitle, webLogo, profileAlignment, webBroadcastText, propSafelinkTime, webBackgroundImage, webBannerImage, webBacksoundUrl]);
 
   // Credits States
   const [credPlatform, setCredPlatform] = useState('');
@@ -1152,7 +1186,7 @@ export default function AdminPanel({
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] space-y-3.5">
             <h3 className="font-syne font-extrabold text-sm uppercase text-[#2E8B6E] flex items-center gap-1.5">
               <ImageIcon className="w-4 h-4 text-[#2E8B6E]" />
-              <span>Pengaturan Gambar Banner & Background</span>
+              <span>Pengaturan Banner, Background & Backsound</span>
             </h3>
             <div>
               <label className="block font-bold mb-0.5 text-[8px] uppercase text-[#2E8B6E]">URL Gambar Banner (16:9)</label>
@@ -1174,13 +1208,23 @@ export default function AdminPanel({
                 className="w-full border-2 border-black p-1.5 font-bold bg-white text-[10px] rounded-lg text-black focus:outline-none"
               />
             </div>
+            <div>
+              <label className="block font-bold mb-0.5 text-[8px] uppercase text-[#2E8B6E]">URL Musik Backsound MP3 Website</label>
+              <input
+                type="text"
+                value={backsoundUrl}
+                onChange={(e) => setBacksoundUrl(e.target.value)}
+                placeholder="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+                className="w-full border-2 border-black p-1.5 font-bold bg-white text-[10px] rounded-lg text-black focus:outline-none"
+              />
+            </div>
             <div className="flex flex-wrap gap-2 pt-1.5">
               <button
                 onClick={() => {
                   onSaveBanner(bannerUrl);
                   soundPlay('success');
                 }}
-                className="bg-[#4CCD99] text-black font-bold uppercase py-1.5 px-3 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] rounded-lg"
+                className="bg-[#4CCD99] text-black font-bold uppercase py-1.5 px-3 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] rounded-lg cursor-pointer"
               >
                 Simpan Banner
               </button>
@@ -1189,9 +1233,20 @@ export default function AdminPanel({
                   onSaveBackground(bgUrl);
                   soundPlay('success');
                 }}
-                className="bg-[#2E8B6E] text-white font-bold uppercase py-1.5 px-3 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] rounded-lg"
+                className="bg-[#2E8B6E] text-white font-bold uppercase py-1.5 px-3 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] rounded-lg cursor-pointer"
               >
                 Simpan Background
+              </button>
+              <button
+                onClick={() => {
+                  if (onSaveBacksound) {
+                    onSaveBacksound(backsoundUrl);
+                  }
+                  soundPlay('success');
+                }}
+                className="bg-black text-white font-bold uppercase py-1.5 px-3 border-2 border-black brutal-shadow-sm brutal-btn-sm text-[9px] rounded-lg cursor-pointer"
+              >
+                Simpan Backsound MP3
               </button>
               <button
                 onClick={() => {
@@ -1199,7 +1254,7 @@ export default function AdminPanel({
                   setBgUrl('');
                   soundPlay('delete');
                 }}
-                className="bg-gray-200 text-black font-bold uppercase py-1.5 px-3 border-2 border-black text-[9px] rounded-lg hover:bg-gray-300"
+                className="bg-gray-200 text-black font-bold uppercase py-1.5 px-3 border-2 border-black text-[9px] rounded-lg hover:bg-gray-300 cursor-pointer"
               >
                 Reset Default Tema
               </button>
