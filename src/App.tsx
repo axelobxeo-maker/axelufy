@@ -44,7 +44,8 @@ import {
   Database,
   ThumbsUp,
   Activity,
-  UserCheck
+  UserCheck,
+  Gamepad2
 } from 'lucide-react';
 import {
   ModItem,
@@ -149,6 +150,7 @@ export default function App() {
   const [customShadowOffset, setCustomShadowOffset] = useState('6px');
 
   // Interactive Premium Features States
+  const [currentTab, setCurrentTab] = useState<'home' | 'mods'>('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [session, setSession] = useState<any>(null);
@@ -404,17 +406,12 @@ export default function App() {
       const loadedFaqs = await getFromDB("faqs_db", DEFAULT_FAQS);
       setFaqs(loadedFaqs);
 
-      // System Preferences / Automatic Dark Mode
+      // System Preferences / Automatic Theme
       const savedTheme = localStorage.getItem('axel_theme');
       if (savedTheme) {
         setCurrentTheme(savedTheme);
       } else {
-        // Auto Dark Mode based on time (e.g. night hours 18:00 - 06:00)
-        const hour = new Date().getHours();
-        if (hour >= 18 || hour < 6) {
-          setCurrentTheme('dark');
-          showToast("Dark Mode diaktifkan otomatis (Waktu Malam)", "info");
-        }
+        setCurrentTheme('green');
       }
 
       // Check maintenance status
@@ -495,6 +492,7 @@ export default function App() {
   // Dynamic Theme application to document node
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('axel_theme', currentTheme);
   }, [currentTheme]);
 
   // Apply custom layout style variables
@@ -1206,7 +1204,7 @@ export default function App() {
   };
 
   return (
-    <div style={rootStyles} className="min-h-screen pb-12 select-none relative font-sans text-black">
+    <div style={rootStyles} className="min-h-screen pb-32 select-none relative font-sans text-black">
       {/* SCROLL PROGRESS INDICATOR */}
       <div
         className="fixed top-0 left-0 h-1.5 bg-[#FF71CD] z-[1000] transition-all duration-100"
@@ -1506,7 +1504,7 @@ export default function App() {
                         setIsSidebarOpen(false);
                         playSynth('click');
                       }}
-                      className="w-full bg-[#A3FFD6] text-black font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs flex items-center justify-center gap-1.5"
+                      className="w-full bg-theme-bg text-black font-extrabold uppercase py-2 border-2 border-black brutal-shadow-sm rounded-lg text-xs flex items-center justify-center gap-1.5"
                     >
                       <Wrench className="w-4 h-4" />
                       <span>KELOLA PORTAL (ADMIN)</span>
@@ -1565,17 +1563,17 @@ export default function App() {
                   loop
                   muted
                   playsInline
-                  className="w-20 h-20 sm:w-24 sm:h-24 bg-[#4CCD99] border-3 border-black brutal-shadow rounded-full object-cover"
+                  className="w-20 h-20 sm:w-24 sm:h-24 bg-theme-accent border-3 border-black brutal-shadow rounded-full object-cover"
                 />
               ) : (
                 <img
                   src={webLogo}
                   alt="Logo Avatar"
-                  className="w-20 h-20 sm:w-24 sm:h-24 bg-[#4CCD99] border-3 border-black brutal-shadow rounded-full object-cover"
+                  className="w-20 h-20 sm:w-24 sm:h-24 bg-theme-accent border-3 border-black brutal-shadow rounded-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
-                    target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Ccircle cx=%22100%22 cy=%22100%22 r=%2290%22 fill=%22%234CCD99%22/%3E%3C/svg%3E';
+                    target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Ccircle cx=%22100%22 cy=%22100%22 r=%2290%22 fill=%22%23A3FF00%22/%3E%3C/svg%3E';
                   }}
                 />
               )}
@@ -1586,7 +1584,7 @@ export default function App() {
                   <h1 className="font-syne font-extrabold text-2xl sm:text-3xl tracking-tight uppercase text-black leading-none">
                     {webTitle}
                   </h1>
-                  <p className="text-[10px] font-bold bg-[#4CCD99] border-2 border-black inline-block px-2.5 py-1 brutal-shadow-sm mt-1.5 rounded-lg text-black uppercase">
+                  <p className="text-[10px] font-bold bg-theme-accent border-2 border-black inline-block px-2.5 py-1 brutal-shadow-sm mt-1.5 rounded-lg text-black uppercase">
                     {webSubtitle}
                   </p>
                 </div>
@@ -1596,10 +1594,10 @@ export default function App() {
                       playSynth('click');
                       setIsSidebarOpen(true);
                     }}
-                    className="bg-[#CCFF00] hover:bg-[#B4F000] text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase shadow-sm flex items-center gap-1 active:translate-y-0.5 cursor-pointer"
+                    className="bg-theme-bg hover:bg-theme-accent text-black border-2 border-black font-extrabold py-1 px-2.5 rounded-lg text-[9px] uppercase shadow-sm flex items-center gap-1 active:translate-y-0.5 cursor-pointer"
                   >
                     <Menu className="w-3.5 h-3.5" />
-                    <span>KONTROL PANEL</span>
+                    <span>MENU</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1608,10 +1606,10 @@ export default function App() {
                       playSynth('click');
                     }}
                     className={`px-2 py-1 border-2 border-black rounded-lg hover:bg-zinc-100 text-[9px] font-extrabold flex items-center gap-1 active:translate-y-0.5 cursor-pointer ${
-                      soundEnabled ? 'bg-zinc-900 text-green-400' : 'bg-white text-gray-500'
+                      soundEnabled ? 'bg-zinc-900 text-theme-accent' : 'bg-white text-gray-500'
                     }`}
                   >
-                    {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                    {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-theme-accent" /> : <VolumeX className="w-3.5 h-3.5" />}
                     <span>SUARA: {soundEnabled ? 'ON' : 'OFF'}</span>
                   </button>
                   {isInstallable && (
@@ -1634,7 +1632,7 @@ export default function App() {
           <div className="bg-white border-3 border-black p-6 rounded-2xl brutal-shadow my-6 text-black">
             <div className="flex justify-between items-center border-b-3 border-black pb-4 mb-6">
               <div className="flex items-center gap-2">
-                <Shield className="w-8 h-8 text-[#4CCD99]" />
+                <Shield className="w-8 h-8 text-theme-accent" />
                 <div>
                   <h2 className="font-syne font-extrabold text-xl uppercase leading-none text-black">LOGY PANEL</h2>
                   <p className="text-[9px] font-mono text-gray-400 mt-1 uppercase">SUPABASE SECURE BACKEND AUTH</p>
@@ -1645,7 +1643,7 @@ export default function App() {
                   window.location.hash = '#';
                   playSynth('click');
                 }}
-                className="bg-[#4CCD99] text-black border-2 border-black hover:bg-[#3dbd8c] font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl shadow-sm cursor-pointer"
+                className="bg-theme-accent hover:bg-theme-bg text-black border-2 border-black font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl shadow-sm cursor-pointer"
               >
                 🏠 Beranda
               </button>
@@ -1653,9 +1651,9 @@ export default function App() {
 
             {isAdminMode ? (
               <div className="space-y-6">
-                <div className="bg-[#A3FFD6]/40 border-2 border-dashed border-[#2E8B6E] p-4 rounded-xl flex items-center justify-between text-black">
+                <div className="bg-theme-bg/40 border-2 border-dashed border-theme-dark p-4 rounded-xl flex items-center justify-between text-black">
                   <div className="text-xs">
-                    <p className="font-extrabold text-[#2E8B6E] uppercase flex items-center gap-1">
+                    <p className="font-extrabold text-theme-dark uppercase flex items-center gap-1">
                       <UserCheck className="w-3.5 h-3.5" />
                       <span>AKSES TERVERIFIKASI</span>
                     </p>
@@ -1663,7 +1661,7 @@ export default function App() {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="bg-black text-[#A3FFD6] hover:bg-zinc-800 font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl border-2 border-black shadow-sm cursor-pointer flex items-center gap-1.5"
+                    className="bg-black text-theme-bg hover:bg-zinc-800 font-extrabold text-[10px] px-3.5 py-1.5 uppercase rounded-xl border-2 border-black shadow-sm cursor-pointer flex items-center gap-1.5"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Keluar Sesi</span>
@@ -1718,13 +1716,13 @@ export default function App() {
                 <div className="flex border-2 border-black rounded-xl overflow-hidden mb-4 shadow-sm">
                   <button
                     onClick={() => { setAuthMode('login'); playSynth('click'); }}
-                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'login' ? 'bg-black text-[#A3FFD6]' : 'bg-white text-black'}`}
+                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'login' ? 'bg-black text-theme-bg' : 'bg-white text-black'}`}
                   >
                     Masuk (Login)
                   </button>
                   <button
                     onClick={() => { setAuthMode('signup'); playSynth('click'); }}
-                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'signup' ? 'bg-black text-[#A3FFD6]' : 'bg-white text-black'}`}
+                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'signup' ? 'bg-black text-theme-bg' : 'bg-white text-black'}`}
                   >
                     Daftar (Sign Up)
                   </button>
@@ -1756,7 +1754,7 @@ export default function App() {
                   <button
                     onClick={handleAuthAction}
                     disabled={authLoading}
-                    className="w-full bg-[#4CCD99] text-black border-2 border-black font-extrabold py-3 rounded-xl brutal-shadow-sm hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_#000000] active:translate-y-1 transition-all text-xs uppercase disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full bg-theme-accent text-black border-2 border-black font-extrabold py-3 rounded-xl brutal-shadow-sm hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_#000000] active:translate-y-1 transition-all text-xs uppercase disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <span>{authLoading ? 'MEMPROSES...' : authMode === 'login' ? 'MASUK KE DASHBOARD' : 'DAFTAR AKUN ADMIN'}</span>
                     {!authLoading && (authMode === 'login' ? <ArrowRight className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
@@ -1792,7 +1790,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => handleNavigateToMod(null)}
-                  className="bg-[#4CCD99] text-black border-2 border-black hover:bg-[#3dbd8c] font-black text-[10px] px-3.5 py-1.5 uppercase rounded-lg shadow-sm cursor-pointer transition-all hover:translate-y-[-1px] active:translate-y-1"
+                  className="bg-theme-accent text-black border-2 border-black hover:bg-theme-bg font-black text-[10px] px-3.5 py-1.5 uppercase rounded-lg shadow-sm cursor-pointer transition-all hover:translate-y-[-1px] active:translate-y-1"
                 >
                   ← KEMBALI KE BERANDA
                 </button>
@@ -1840,7 +1838,7 @@ export default function App() {
                       </p>
                       <button
                         onClick={() => handleNavigateToMod(null)}
-                        className="bg-[#4CCD99] border-2 border-black px-4 py-2 mt-4 text-xs font-extrabold uppercase rounded-xl brutal-shadow-sm cursor-pointer"
+                        className="bg-theme-accent hover:bg-theme-bg border-2 border-black px-4 py-2 mt-4 text-xs font-extrabold uppercase rounded-xl brutal-shadow-sm cursor-pointer"
                       >
                         Kembali ke Halaman Utama
                       </button>
@@ -1979,48 +1977,76 @@ export default function App() {
 
               {/* MOD CARDS GRID SECTION */}
               <div className="space-y-6">
-                {getVisibleMods().length === 0 ? (
-                  /* Empty state view */
-                  <div className="bg-white text-black border-3 border-black brutal-shadow p-8 text-center font-bold rounded-2xl flex flex-col items-center">
-                    <Activity className="w-12 h-12 text-gray-400 mb-2 animate-pulse" />
-                    <h4 className="font-syne font-extrabold text-sm uppercase">Mod Tidak Ditemukan!</h4>
-                    <p className="text-[10px] text-gray-400 font-normal mt-1 leading-normal">
-                      Cobalah mengetikkan kata kunci lain, bersihkan filter pencarian, atau sampaikan usulan request mod di bagian bawah halaman agar segera ditambahkan.
-                    </p>
-                  </div>
-                ) : (
-                  getVisibleMods().map((item, idx) => (
-                    <div id={`mod-card-${idx}`} key={item.id || idx}>
-                      <ModCard
-                        mod={item}
-                        cardIndex={idx}
-                        onLike={handleLikeMod}
-                        onAddComment={handleAddComment}
-                        onRate={handleRateMod}
-                        onReportBroken={handleReportBroken}
-                        onSelectCategory={(tag) => {
-                          setActiveCategoryFilter(tag);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                        isFavorited={favorites.includes(idx)}
-                        onToggleFavorite={handleToggleFavorite}
-                        triggerSafelink={triggerSafelink}
-                        soundPlay={soundPlay}
-                      />
-                    </div>
-                  ))
-                )}
+                {(() => {
+                  const visibleMods = getVisibleMods();
+                  const displayedMods = currentTab === 'home' ? visibleMods.slice(0, 3) : visibleMods;
+
+                  if (displayedMods.length === 0) {
+                    return (
+                      <div className="bg-white text-black border-3 border-black brutal-shadow p-8 text-center font-bold rounded-2xl flex flex-col items-center">
+                        <Activity className="w-12 h-12 text-gray-400 mb-2 animate-pulse" />
+                        <h4 className="font-syne font-extrabold text-sm uppercase">Mod Tidak Ditemukan!</h4>
+                        <p className="text-[10px] text-gray-400 font-normal mt-1 leading-normal">
+                          Cobalah mengetikkan kata kunci lain, bersihkan filter pencarian, atau sampaikan usulan request mod di bagian bawah halaman agar segera ditambahkan.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {displayedMods.map((item, idx) => (
+                        <div id={`mod-card-${idx}`} key={item.id || idx}>
+                          <ModCard
+                            mod={item}
+                            cardIndex={idx}
+                            onLike={handleLikeMod}
+                            onAddComment={handleAddComment}
+                            onRate={handleRateMod}
+                            onReportBroken={handleReportBroken}
+                            onSelectCategory={(tag) => {
+                              setActiveCategoryFilter(tag);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            isFavorited={favorites.includes(idx)}
+                            onToggleFavorite={handleToggleFavorite}
+                            triggerSafelink={triggerSafelink}
+                            soundPlay={soundPlay}
+                          />
+                        </div>
+                      ))}
+
+                      {currentTab === 'home' && visibleMods.length > 3 && (
+                        <div className="pt-4 text-center">
+                          <button
+                            onClick={() => {
+                              playSynth('success');
+                              setCurrentTab('mods');
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-2 bg-theme-accent hover:bg-theme-bg text-black font-extrabold text-xs uppercase px-6 py-4 border-3 border-black brutal-shadow-sm hover:translate-y-[-2px] active:translate-y-1 transition-all rounded-xl cursor-pointer"
+                          >
+                            <span>More (Lihat {visibleMods.length - 3} Mod Lainnya)</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               {/* COMMUNITY SURVEYS & USER REQUESTS */}
-              <FAQPolling
-                faqs={faqs}
-                polling={polling}
-                onVotePolling={handleVotePolling}
-                requests={requests}
-                onRequestMod={handleRequestMod}
-                onUpvoteRequest={handleUpvoteRequest}
-              />
+              {currentTab === 'home' && (
+                <FAQPolling
+                  faqs={faqs}
+                  polling={polling}
+                  onVotePolling={handleVotePolling}
+                  requests={requests}
+                  onRequestMod={handleRequestMod}
+                  onUpvoteRequest={handleUpvoteRequest}
+                />
+              )}
             </main>
           </>
         )}
@@ -2067,6 +2093,59 @@ export default function App() {
             HYBRID SYNC CLUSTER STATE: ACTIVE SECURE • 10.000+ CACHED DATA
           </p>
         </footer>
+
+        {/* BOTTOM NAVIGATION BAR (WhatsApp style, with MENU, HOME, MOD) */}
+        <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white border-t-3 border-black py-3 px-4 shadow-[0_-4px_10px_rgba(0,0,0,0.08)]">
+          <div className="max-w-md mx-auto flex items-center justify-around">
+            {/* MENU TAB */}
+            <button
+              onClick={() => {
+                playSynth('click');
+                setIsSidebarOpen(true);
+              }}
+              className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+            >
+              <div className="w-12 h-12 rounded-xl border-2 border-black bg-theme-accent hover:bg-theme-dark text-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] active:translate-y-0.5 transition-all">
+                <Menu className="w-5 h-5 text-black" />
+              </div>
+              <span>MENU</span>
+            </button>
+
+            {/* HOME TAB */}
+            <button
+              onClick={() => {
+                playSynth('click');
+                setCurrentTab('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+            >
+              <div className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] active:translate-y-0.5 transition-all ${
+                currentTab === 'home' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
+              }`}>
+                <Home className="w-5 h-5 text-black" />
+              </div>
+              <span className={currentTab === 'home' ? 'text-black font-black' : 'text-zinc-500'}>HOME</span>
+            </button>
+
+            {/* MOD TAB */}
+            <button
+              onClick={() => {
+                playSynth('click');
+                setCurrentTab('mods');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+            >
+              <div className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] active:translate-y-0.5 transition-all ${
+                currentTab === 'mods' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
+              }`}>
+                <Gamepad2 className="w-5 h-5 text-black" />
+              </div>
+              <span className={currentTab === 'mods' ? 'text-black font-black' : 'text-zinc-500'}>MOD</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

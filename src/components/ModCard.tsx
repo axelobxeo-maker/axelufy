@@ -287,7 +287,7 @@ export default function ModCard({
                     <button
                       key={idx}
                       onClick={() => onSelectCategory(cleanTag)}
-                      className="bg-[#A3FFD6] hover:bg-[#4CCD99] transition-colors border-2 border-black text-[9px] font-extrabold uppercase px-2 py-0.5 text-black rounded-lg"
+                      className="bg-theme-bg hover:bg-theme-accent transition-colors border-2 border-black text-[9px] font-extrabold uppercase px-2 py-0.5 text-black rounded-lg"
                     >
                       #{cleanTag}
                     </button>
@@ -304,7 +304,7 @@ export default function ModCard({
                 }
               }}
               className={`font-syne font-extrabold text-lg sm:text-xl uppercase leading-tight text-black mb-1 flex items-center gap-1.5 ${
-                !isStandaloneView ? 'cursor-pointer hover:text-[#4CCD99] hover:underline' : ''
+                !isStandaloneView ? 'cursor-pointer hover:text-theme-accent hover:underline' : ''
               }`}
               title={!isStandaloneView ? "Klik untuk membuka halaman tunggal mod ini" : undefined}
             >
@@ -331,7 +331,7 @@ export default function ModCard({
                     setSelectedMirror('primary');
                   }}
                   className={`px-2 py-0.5 border-2 border-black rounded text-[9px] font-bold ${
-                    selectedMirror === 'primary' ? 'bg-[#4CCD99]' : 'bg-white text-zinc-600'
+                    selectedMirror === 'primary' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-600'
                   }`}
                 >
                   UTAMA (UNLIMITED)
@@ -344,7 +344,7 @@ export default function ModCard({
                       setSelectedMirror(mir.name);
                     }}
                     className={`px-2 py-0.5 border-2 border-black rounded text-[9px] font-bold ${
-                      selectedMirror === mir.name ? 'bg-[#FF71CD]' : 'bg-white text-zinc-600'
+                      selectedMirror === mir.name ? 'bg-theme-bg text-black' : 'bg-white text-zinc-600'
                     }`}
                   >
                     MIRROR: {mir.name.toUpperCase()}
@@ -356,7 +356,7 @@ export default function ModCard({
             {/* Password Indicator */}
             <div className="bg-zinc-50 border-2 border-black p-2 flex justify-between items-center text-[10px] font-bold rounded-lg relative overflow-hidden">
               <span className="truncate pr-2 flex items-center gap-1">
-                <Key className="w-3.5 h-3.5 text-[#2E8B6E]" />
+                <Key className="w-3.5 h-3.5 text-theme-dark" />
                 <span>PASSWORD: {decryptedPassword}</span>
               </span>
               <button
@@ -371,7 +371,7 @@ export default function ModCard({
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => triggerSafelink(cardIndex, getActiveDownloadUrl(), true)}
-                className="flex-1 text-center bg-[#4CCD99] text-black font-extrabold text-[10px] uppercase py-2.5 px-3 border-3 border-black brutal-shadow-sm brutal-btn flex items-center justify-center gap-2 rounded-xl"
+                className="flex-1 text-center bg-theme-accent text-black font-extrabold text-[10px] uppercase py-2.5 px-3 border-3 border-black brutal-shadow-sm brutal-btn flex items-center justify-center gap-2 rounded-xl"
               >
                 <Download className="w-4 h-4 text-black animate-bounce" />
                 <span>DOWNLOAD NOW ({selectedMirror === 'primary' ? 'SPEED' : selectedMirror.toUpperCase()})</span>
@@ -410,7 +410,7 @@ export default function ModCard({
                     soundPlay('success');
                     onLike(cardIndex);
                   }}
-                  className="bg-[#A3FFD6] px-2 py-1 border-2 border-black rounded text-black hover:bg-[#4CCD99] active:translate-y-0.5 flex items-center gap-1"
+                  className="bg-theme-bg px-2 py-1 border-2 border-black rounded text-black hover:bg-theme-accent active:translate-y-0.5 flex items-center gap-1"
                 >
                   <Heart className="w-3 h-3 text-black fill-black" />
                   <span>{mod.likes || 0} Like</span>

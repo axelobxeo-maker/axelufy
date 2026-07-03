@@ -4,11 +4,14 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-syne: "Syne", sans-serif;
+  --color-theme-bg: var(--bg-color);
+  --color-theme-accent: var(--accent-color);
+  --color-theme-dark: var(--accent-dark);
 }
 
 :root {
-  --bg-color: #CCFF00;
-  --accent-color: #A3FF00;
+  --bg-color: #FAF9F6;
+  --accent-color: #CCFF00;
   --accent-dark: #1F4000;
   --card-bg: #FFFFFF;
   --text-color: #000000;
@@ -23,8 +26,8 @@
 }
 
 [data-theme="green"] {
-  --bg-color: #CCFF00;
-  --accent-color: #A3FF00;
+  --bg-color: #FAF9F6;
+  --accent-color: #CCFF00;
   --accent-dark: #1F4000;
   --card-bg: #FFFFFF;
   --text-color: #000000;
