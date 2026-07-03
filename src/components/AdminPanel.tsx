@@ -741,7 +741,7 @@ export default function AdminPanel({
                 />
               </div>
               <div className="md:col-span-2">
-                <label class="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Deskripsi Mod</label>
+                <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Deskripsi Mod</label>
                 <textarea
                   value={modDesc}
                   onChange={(e) => setModDesc(e.target.value)}
@@ -1016,7 +1016,7 @@ export default function AdminPanel({
             <div className="overflow-x-auto border-3 border-black rounded-xl">
               <table className="w-full bg-white text-left text-[11px] border-collapse">
                 <thead>
-                  <tr class="bg-black text-white uppercase font-bold text-[9px] border-b-2 border-black">
+                  <tr className="bg-black text-white uppercase font-bold text-[9px] border-b-2 border-black">
                     <th className="p-2 border-r border-gray-700">Preview</th>
                     <th className="p-2 border-r border-gray-700">Nama Mod</th>
                     <th className="p-2 border-r border-gray-700">Kategori</th>
@@ -1655,7 +1655,7 @@ export default function AdminPanel({
             <div className="max-h-60 overflow-y-auto border-2 border-black rounded-lg">
               <table className="w-full bg-white text-left text-[10px] border-collapse">
                 <thead>
-                  <tr class="bg-gray-200 uppercase font-bold text-[8px] border-b border-black">
+                  <tr className="bg-gray-200 uppercase font-bold text-[8px] border-b border-black">
                     <th className="p-1.5 border-r border-black w-10 text-center">Pilih</th>
                     <th className="p-1.5 border-r border-black">Nama Mod</th>
                     <th className="p-1.5 border-r border-black">Kategori</th>
