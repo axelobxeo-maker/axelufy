@@ -46,6 +46,21 @@ import {
 import { ModItem, CreditItem, PresetLink, FAQItem, PollingTopic, RequestMod } from '../types';
 import DashboardAnalytics from './DashboardAnalytics';
 
+const isVideoUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  const lowercase = url.toLowerCase();
+  return (
+    lowercase.endsWith('.mp4') ||
+    lowercase.endsWith('.webm') ||
+    lowercase.endsWith('.ogg') ||
+    lowercase.endsWith('.mov') ||
+    lowercase.includes('.mp4?') ||
+    lowercase.includes('.webm?') ||
+    lowercase.includes('/video/') ||
+    (lowercase.includes('imagekit.io') && lowercase.includes('.mp4'))
+  );
+};
+
 interface AdminPanelProps {
   mods: ModItem[];
   credits: CreditItem[];
@@ -775,7 +790,7 @@ export default function AdminPanel({
               <div className="md:col-span-2">
                 <label className="block font-bold mb-0.5 uppercase text-[#2E8B6E] text-[8px] flex items-center gap-1">
                   <ImageIcon className="w-3.5 h-3.5" />
-                  <span>Link URL Gambar Mod (Unggah ke Postimages/ImgBB)</span>
+                  <span>Link URL Gambar / Video Mod (Mendukung .mp4 untuk Auto-play)</span>
                 </label>
                 <input
                   type="text"
@@ -1028,16 +1043,27 @@ export default function AdminPanel({
                   {mods.map((item, index) => (
                     <tr key={index} className="hover:bg-gray-100 transition-colors">
                       <td className="p-2 border-r border-black w-12 text-center">
-                        <img
-                          src={item.image}
-                          className="w-8 h-8 object-cover border-2 border-black rounded-md"
-                          alt="Thumbnail"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2220%22 text-anchor=%22middle%22 fill=%22%236b7280%22%3EN/A%3C/text%3E%3C/svg%3E';
-                          }}
-                        />
+                        {isVideoUrl(item.image) ? (
+                          <video
+                            src={item.image}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-8 h-8 object-cover border-2 border-black rounded-md select-none"
+                          />
+                        ) : (
+                          <img
+                            src={item.image}
+                            className="w-8 h-8 object-cover border-2 border-black rounded-md"
+                            alt="Thumbnail"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2220%22 text-anchor=%22middle%22 fill=%22%236b7280%22%3EN/A%3C/text%3E%3C/svg%3E';
+                            }}
+                          />
+                        )}
                       </td>
                       <td className="p-2 border-r border-black max-w-[150px] truncate leading-tight">
                         <span className="block font-extrabold text-black">{item.name}</span>
@@ -1189,7 +1215,7 @@ export default function AdminPanel({
               <span>Pengaturan Banner, Background & Backsound</span>
             </h3>
             <div>
-              <label className="block font-bold mb-0.5 text-[8px] uppercase text-[#2E8B6E]">URL Gambar Banner (16:9)</label>
+              <label className="block font-bold mb-0.5 text-[8px] uppercase text-[#2E8B6E]">URL Gambar / Video Banner (Mendukung .mp4 16:9)</label>
               <input
                 type="text"
                 value={bannerUrl}
