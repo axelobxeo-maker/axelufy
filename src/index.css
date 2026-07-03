@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-syne: "Syne", sans-serif;
+}
+
+:root {
+  --bg-color: #A3FFD6;
+  --accent-color: #4CCD99;
+  --accent-dark: #2E8B6E;
+  --card-bg: #FFFFFF;
+  --text-color: #000000;
+  --border-color: #000000;
+  --border-radius-lg: 16px;
+  --border-radius-md: 12px;
+  --border-radius-sm: 8px;
+  --shadow-offset: 6px;
+  --shadow-offset-sm: 4px;
+  --shadow-offset-lg: 8px;
+  --custom-bg-image: none;
+}
+
+[data-theme="green"] {
+  --bg-color: #A3FFD6;
+  --accent-color: #4CCD99;
+  --accent-dark: #2E8B6E;
+  --card-bg: #FFFFFF;
+  --text-color: #000000;
+  --border-color: #000000;
+}
+
+[data-theme="pink"] {
+  --bg-color: #FF71CD;
+  --accent-color: #00F0FF;
+  --accent-dark: #0088AA;
+  --card-bg: #FFFFFF;
+  --text-color: #0C0C0C;
+  --border-color: #000000;
+}
+
+[data-theme="mint"] {
+  --bg-color: #B2F9FC;
+  --accent-color: #8D00FF;
+  --accent-dark: #5C00AA;
+  --card-bg: #FFFFFF;
+  --text-color: #0C0C0C;
+  --border-color: #000000;
+}
+
+[data-theme="dark"] {
+  --bg-color: #121214;
+  --accent-color: #39FF14;
+  --accent-dark: #1FAF0E;
+  --card-bg: #1E1E24;
+  --text-color: #FFFFFF;
+  --border-color: #FFFFFF;
+}
+
+[data-theme="orange"] {
+  --bg-color: #FF8A08;
+  --accent-color: #FFF200;
+  --accent-dark: #C4B800;
+  --card-bg: #FFFFFF;
+  --text-color: #0C0C0C;
+  --border-color: #000000;
+}
+
+body {
+  background-color: var(--bg-color);
+  background-image: var(--custom-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Neo Brutalist Styles */
+.brutal-border {
+  border: 3px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+}
+
+.brutal-border-b {
+  border-bottom: 3px solid var(--border-color);
+}
+
+.brutal-border-sm {
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+}
+
+.brutal-border-md {
+  border: 3px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+}
+
+.brutal-shadow {
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0px 0px var(--border-color);
+  border-radius: var(--border-radius-lg);
+}
+
+.brutal-shadow-sm {
+  box-shadow: var(--shadow-offset-sm) var(--shadow-offset-sm) 0px 0px var(--border-color);
+  border-radius: var(--border-radius-sm);
+}
+
+.brutal-shadow-lg {
+  box-shadow: var(--shadow-offset-lg) var(--shadow-offset-lg) 0px 0px var(--border-color);
+  border-radius: var(--border-radius-lg);
+}
+
+.brutal-btn {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  border-radius: var(--border-radius-md);
+}
+
+.brutal-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: calc(var(--shadow-offset) + 1px) calc(var(--shadow-offset) + 1px) 0px 0px var(--border-color);
+}
+
+.brutal-btn:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px 0px var(--border-color);
+}
+
+.brutal-btn-sm {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  border-radius: var(--border-radius-sm);
+}
+
+.brutal-btn-sm:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: calc(var(--shadow-offset-sm) + 1px) calc(var(--shadow-offset-sm) + 1px) 0px 0px var(--border-color);
+}
+
+.brutal-btn-sm:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px var(--border-color);
+}
+
+.brutal-card {
+  background: var(--card-bg);
+  border: 3px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0px 0px var(--border-color);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.brutal-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: calc(var(--shadow-offset) + 2px) calc(var(--shadow-offset) + 2px) 0px 0px var(--border-color);
+}
+
+.brutal-card-sm {
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-offset-sm) var(--shadow-offset-sm) 0px 0px var(--border-color);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-2px, -1px) rotate(-0.5deg); }
+  30% { transform: translate(1px, 2px) rotate(0.5deg); }
+  50% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+  70% { transform: translate(2px, -1px) rotate(0.5deg); }
+  90% { transform: translate(-1px, 2px) rotate(0deg); }
+}
+
+.shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+}
+
+/* Marquee Ticker */
+@keyframes ticker {
+  0% { transform: translate3d(10%, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+.ticker-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-content {
+  display: inline-block;
+  animation: ticker 25s linear infinite;
+}
+
+.ticker-content:hover {
+  animation-play-state: paused;
+}
+
+.click-spark {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-color);
+  border: 1px solid var(--border-color);
+  pointer-events: none;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  animation: spark-fade 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  z-index: 9999;
+}
+
+@keyframes spark-fade {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.5) rotate(180deg);
+  }
+}
+
+/* Skeleton animation */
+@keyframes skeleton-loading {
+  0% { background-color: rgba(0, 0, 0, 0.1); }
+  50% { background-color: rgba(0, 0, 0, 0.2); }
+  100% { background-color: rgba(0, 0, 0, 0.1); }
+}
+.skeleton {
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}

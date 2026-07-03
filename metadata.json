@@ -1,0 +1,6 @@
+{
+  "name": "AXELUF Portal",
+  "description": "Premium Portal for verified cleaner game mods, tools, and links with interactive bento grid dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
