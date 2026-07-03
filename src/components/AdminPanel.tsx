@@ -1609,24 +1609,23 @@ export default function AdminPanel({
 CREATE TABLE IF NOT EXISTS public.settings (
     key text PRIMARY KEY,
     value jsonb,
-    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 -- 2. Aktifkan Row Level Security (RLS)
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
 
--- 3. Izinkan semua orang membaca data settings (Public Read)
-CREATE POLICY "Allow public read access" 
-ON public.settings 
-FOR SELECT 
-USING (true);
+-- 3. Hapus policy lama jika ada untuk menghindari konflik duplikasi nama
+DROP POLICY IF EXISTS "Allow public read access" ON public.settings;
+DROP POLICY IF EXISTS "Allow public insert" ON public.settings;
+DROP POLICY IF EXISTS "Allow public update" ON public.settings;
+DROP POLICY IF EXISTS "Allow public delete" ON public.settings;
 
--- 4. Izinkan semua orang melakukan insert/update/delete (Supabase API Key)
-CREATE POLICY "Allow write access for anyone with API key" 
-ON public.settings 
-FOR ALL 
-USING (true) 
-WITH CHECK (true);`}
+-- 4. Buat Kebijakan RLS terpisah (Kompatibel 100% tanpa error sintaksis)
+CREATE POLICY "Allow public read access" ON public.settings FOR SELECT USING (true);
+CREATE POLICY "Allow public insert" ON public.settings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update" ON public.settings FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public delete" ON public.settings FOR DELETE USING (true);`}
             </div>
 
             <button
@@ -1636,11 +1635,17 @@ WITH CHECK (true);`}
 `CREATE TABLE IF NOT EXISTS public.settings (
     key text PRIMARY KEY,
     value jsonb,
-    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read access" ON public.settings;
+DROP POLICY IF EXISTS "Allow public insert" ON public.settings;
+DROP POLICY IF EXISTS "Allow public update" ON public.settings;
+DROP POLICY IF EXISTS "Allow public delete" ON public.settings;
 CREATE POLICY "Allow public read access" ON public.settings FOR SELECT USING (true);
-CREATE POLICY "Allow write access for anyone with API key" ON public.settings FOR ALL USING (true) WITH CHECK (true);`
+CREATE POLICY "Allow public insert" ON public.settings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update" ON public.settings FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public delete" ON public.settings FOR DELETE USING (true);`
                 );
                 alert("Query SQL berhasil disalin ke clipboard!");
               }}

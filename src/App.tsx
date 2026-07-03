@@ -40,6 +40,7 @@ import {
   HelpCircle,
   Plus,
   ArrowRight,
+  ArrowLeft,
   Database,
   ThumbsUp,
   Activity,
@@ -137,6 +138,7 @@ export default function App() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [currentPath, setCurrentPath] = useState(window.location.pathname + window.location.hash);
+  const [activeSingleModId, setActiveSingleModId] = useState<string | null>(null);
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -199,9 +201,16 @@ export default function App() {
   useEffect(() => {
     const handleLocationChange = () => {
       setCurrentPath(window.location.pathname + window.location.hash);
+      const params = new URLSearchParams(window.location.search);
+      setActiveSingleModId(params.get('modId'));
     };
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('hashchange', handleLocationChange);
+    
+    // Initial sync
+    const params = new URLSearchParams(window.location.search);
+    setActiveSingleModId(params.get('modId'));
+
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('hashchange', handleLocationChange);
@@ -230,16 +239,9 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const modIdParam = params.get('modId');
     if (modIdParam !== null) {
-      const idx = parseInt(modIdParam);
-      if (!isNaN(idx)) {
-        setTimeout(() => {
-          showToast(`Membuka tautan referensi Mod ID: ${idx}`, 'success');
-          const el = document.getElementById(`mod-card-${idx}`);
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 1200);
-      }
+      setActiveSingleModId(modIdParam);
     }
-  }, [mods]);
+  }, []);
 
   // ======================================================================
   // DATA MANAGEMENT & OFFLINE RESILIENCY
@@ -627,50 +629,38 @@ export default function App() {
   };
 
   // ======================================================================
-  // SAFELINK COUNTDOWN
+  // SAFELINK COUNTDOWN (Bypassed - Langsung Quick Download ke Link Tujuan)
   // ======================================================================
   const triggerSafelink = (index: number, url: string, isDownload: boolean) => {
     handleActiveClickCount();
     if (isBanned) return;
 
     playSynth('click');
-    setSafelinkTargetUrl(url);
-    setSafelinkIsDownloadAction(isDownload);
-    setSafelinkActiveCardIndex(index);
-    setSafelinkCountdown(safelinkTime);
-    setSafelinkOverlayOpen(true);
-  };
-
-  useEffect(() => {
-    if (!safelinkOverlayOpen) return;
-    if (safelinkCountdown <= 0) {
-      playSynth('success');
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setSafelinkCountdown(prev => prev - 1);
-      playSynth('click');
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [safelinkOverlayOpen, safelinkCountdown]);
-
-  const handleSafelinkRedirect = () => {
-    if (!safelinkTargetUrl) return;
-
-    // Increment view / download count
-    if (safelinkIsDownloadAction && safelinkActiveCardIndex !== null) {
+    
+    // Increment download count immediately if it's a download action
+    if (isDownload && index !== null && index !== undefined && index >= 0 && index < mods.length) {
       const updated = [...mods];
-      updated[safelinkActiveCardIndex].downloads = (updated[safelinkActiveCardIndex].downloads || 0) + 1;
+      updated[index].downloads = (updated[index].downloads || 0) + 1;
       setMods(updated);
       writeToDB(DB_KEYS.MODS, updated);
     }
 
-    window.open(safelinkTargetUrl, '_blank');
-    setSafelinkOverlayOpen(false);
-    setSafelinkTargetUrl('');
-    setSafelinkActiveCardIndex(null);
+    playSynth('success');
+    window.open(url, '_blank');
+  };
+
+  const handleNavigateToMod = (modId: string | null) => {
+    playSynth('click');
+    if (modId !== null && modId !== undefined && modId !== '') {
+      const newUrl = `${window.location.origin}${window.location.pathname}?modId=${modId}`;
+      window.history.pushState({ modId }, '', newUrl);
+      setActiveSingleModId(modId.toString());
+    } else {
+      const newUrl = `${window.location.origin}${window.location.pathname}`;
+      window.history.pushState({}, '', newUrl);
+      setActiveSingleModId(null);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // ======================================================================
@@ -1757,6 +1747,78 @@ export default function App() {
               <Sparkles className="w-4 h-4" />
             </div>
           </div>
+        ) : activeSingleModId ? (
+          <>
+            {/* SINGLE MOD DEDICATED VIEW PAGE */}
+            <main className="text-black space-y-6">
+              {/* Back button header */}
+              <div className="flex items-center justify-between bg-black text-white p-3.5 brutal-border brutal-shadow-sm rounded-xl">
+                <div className="flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4 text-[#A3FFD6]" />
+                  <span className="font-extrabold text-xs uppercase text-white tracking-wider">
+                    Mod Terpilih (Single Mod View)
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleNavigateToMod(null)}
+                  className="bg-[#4CCD99] text-black border-2 border-black hover:bg-[#3dbd8c] font-black text-[10px] px-3.5 py-1.5 uppercase rounded-lg shadow-sm cursor-pointer transition-all hover:translate-y-[-1px] active:translate-y-1"
+                >
+                  ← KEMBALI KE BERANDA
+                </button>
+              </div>
+
+              {/* Render Selected Mod */}
+              {(() => {
+                const foundModIndex = mods.findIndex(m => m.id === activeSingleModId || m.id === `mod-${activeSingleModId}`);
+                let modIndex = foundModIndex;
+                if (modIndex === -1) {
+                  const numericIdx = parseInt(activeSingleModId);
+                  if (!isNaN(numericIdx) && numericIdx >= 0 && numericIdx < mods.length) {
+                    modIndex = numericIdx;
+                  }
+                }
+
+                if (modIndex !== -1 && mods[modIndex]) {
+                  const item = mods[modIndex];
+                  return (
+                    <ModCard
+                      mod={item}
+                      cardIndex={modIndex}
+                      onLike={handleLikeMod}
+                      onAddComment={handleAddComment}
+                      onRate={handleRateMod}
+                      onReportBroken={handleReportBroken}
+                      onSelectCategory={(tag) => {
+                        handleNavigateToMod(null);
+                        setActiveCategoryFilter(tag);
+                      }}
+                      isFavorited={favorites.includes(modIndex)}
+                      onToggleFavorite={handleToggleFavorite}
+                      triggerSafelink={triggerSafelink}
+                      soundPlay={soundPlay}
+                      isStandaloneView={true}
+                    />
+                  );
+                } else {
+                  return (
+                    <div className="bg-white text-black border-3 border-black brutal-shadow p-8 text-center font-bold rounded-2xl flex flex-col items-center">
+                      <AlertTriangle className="w-12 h-12 text-red-500 mb-2 animate-pulse" />
+                      <h4 className="font-syne font-extrabold text-sm uppercase">Mod Tidak Ditemukan!</h4>
+                      <p className="text-[10px] text-gray-400 font-normal mt-1 leading-normal">
+                        Tautan referensi yang Anda kunjungi salah atau file modifikasi ini telah dihapus.
+                      </p>
+                      <button
+                        onClick={() => handleNavigateToMod(null)}
+                        className="bg-[#4CCD99] border-2 border-black px-4 py-2 mt-4 text-xs font-extrabold uppercase rounded-xl brutal-shadow-sm cursor-pointer"
+                      >
+                        Kembali ke Halaman Utama
+                      </button>
+                    </div>
+                  );
+                }
+              })()}
+            </main>
+          </>
         ) : (
           <>
             {/* MAIN PUBLIC WEB VIEW */}
@@ -1975,50 +2037,6 @@ export default function App() {
           </p>
         </footer>
       </div>
-
-      {/* SAFELINK TIMER MODAL OVERLAY */}
-      {safelinkOverlayOpen && (
-        <div className="fixed inset-0 bg-black/90 z-[99999] flex items-center justify-center p-4">
-          <div className="bg-white text-black border-3 border-black p-6 max-w-sm w-full text-center rounded-2xl shadow-[6px_6px_0_0_#000000] transform rotate-1 flex flex-col items-center">
-            <Activity className="w-10 h-10 text-black mb-2 animate-spin" />
-            <h3 className="font-syne font-extrabold text-base uppercase mb-1 text-black">
-              MEMPROSES ENKRIPSI LINK
-            </h3>
-            <p className="text-[10px] text-gray-500 mb-4 leading-normal font-semibold">
-              Mohon tunggu beberapa detik, server sedang memverifikasi rute download yang aman...
-            </p>
-
-            {/* Simulated countdown clock */}
-            <div className="relative w-20 h-20 mx-auto flex items-center justify-center bg-[#A3FFD6] border-4 border-black rounded-full mb-5 shadow-[4px_4px_0_0_#000000] animate-pulse">
-              <span className="font-syne font-extrabold text-2xl text-black">
-                {safelinkCountdown}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={handleSafelinkRedirect}
-                disabled={safelinkCountdown > 0}
-                className="w-full bg-[#4CCD99] text-black border-2 border-black font-extrabold py-2.5 rounded-xl brutal-shadow-sm brutal-btn text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-              >
-                <span>{safelinkCountdown > 0 ? 'MEMVERIFIKASI TAUTAN...' : 'LANJUTKAN UNDUH'}</span>
-                {safelinkCountdown === 0 && <Download className="w-4 h-4 text-black animate-bounce" />}
-              </button>
-
-              <button
-                onClick={() => {
-                  setSafelinkOverlayOpen(false);
-                  setSafelinkTargetUrl('');
-                  playSynth('delete');
-                }}
-                className="w-full bg-gray-100 hover:bg-gray-200 text-black font-bold py-1.5 text-[10px] uppercase border-2 border-black rounded-lg"
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

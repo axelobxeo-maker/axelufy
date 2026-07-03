@@ -19,6 +19,7 @@ interface ModCardProps {
   onToggleFavorite: (index: number) => void;
   triggerSafelink: (index: number, url: string, isDownload: boolean) => void;
   soundPlay: (type: 'click' | 'success' | 'delete') => void;
+  isStandaloneView?: boolean;
 }
 
 export default function ModCard({
@@ -32,7 +33,8 @@ export default function ModCard({
   isFavorited,
   onToggleFavorite,
   triggerSafelink,
-  soundPlay
+  soundPlay,
+  isStandaloneView = false
 }: ModCardProps) {
   const [commentName, setCommentName] = useState('');
   const [commentText, setCommentText] = useState('');
@@ -112,8 +114,15 @@ export default function ModCard({
           <span className="w-2.5 h-2.5 rounded-full bg-[#A3FFD6] border-2 border-black inline-block"></span>
           <span className="w-2.5 h-2.5 rounded-full bg-[#4CCD99] border-2 border-black inline-block"></span>
         </div>
-        <div className="bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5 text-[9px] text-zinc-400 font-extrabold truncate max-w-[120px] sm:max-w-xs">
-          axeluf.co/mod-{cardIndex}
+        <div 
+          onClick={() => {
+            soundPlay('click');
+            window.open(`${window.location.origin}/?modId=${mod.id || cardIndex}`, '_blank');
+          }}
+          className="bg-zinc-900 border border-zinc-700 hover:border-zinc-400 rounded-full px-3 py-0.5 text-[9px] text-[#A3FFD6] font-extrabold truncate max-w-[120px] sm:max-w-xs cursor-pointer transition-all"
+          title="Buka Halaman Tunggal Mod Ini"
+        >
+          axeluf.co/mod-{mod.id || cardIndex} ↗
         </div>
         <button
           onClick={() => {
@@ -211,9 +220,21 @@ export default function ModCard({
             </div>
 
             {/* Mod Title */}
-            <h3 className="font-syne font-extrabold text-lg sm:text-xl uppercase leading-tight text-black mb-1 flex items-center gap-1.5">
+            <h3 
+              onClick={() => {
+                if (!isStandaloneView) {
+                  soundPlay('click');
+                  window.open(`${window.location.origin}/?modId=${mod.id || cardIndex}`, '_blank');
+                }
+              }}
+              className={`font-syne font-extrabold text-lg sm:text-xl uppercase leading-tight text-black mb-1 flex items-center gap-1.5 ${
+                !isStandaloneView ? 'cursor-pointer hover:text-[#4CCD99] hover:underline' : ''
+              }`}
+              title={!isStandaloneView ? "Klik untuk membuka halaman tunggal mod ini" : undefined}
+            >
               {mod.name}
               {mod.isDraft && <span className="bg-yellow-400 border border-black text-[8px] px-1 py-0.5 font-sans rounded">DRAFT</span>}
+              {!isStandaloneView && <span className="text-[10px] text-gray-400 normal-case font-normal ml-1">(buka page ↗)</span>}
             </h3>
 
             {/* Description */}
