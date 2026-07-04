@@ -45,7 +45,16 @@ import {
   ThumbsUp,
   Activity,
   UserCheck,
-  Gamepad2
+  Gamepad2,
+  Youtube,
+  Instagram,
+  Facebook,
+  Twitter,
+  Globe,
+  Chrome,
+  Smartphone,
+  Laptop,
+  Send
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
@@ -153,6 +162,8 @@ export default function App() {
   const [webBroadcastText, setWebBroadcastText] = useState('DATABASE DISEGARKAN: Kami bermigrasi ke kluster server baru yang lebih stabil dan super ringan! | UPDATE: Semua MLBB Skin Mod aktif untuk patch terbaru!');
   const [safelinkTime, setSafelinkTime] = useState(5);
   const [webBacksoundUrl, setWebBacksoundUrl] = useState('');
+  const [webDownloadText, setWebDownloadText] = useState('DOWNLOAD NOW (SPEED)');
+  const [isScanlineActive, setIsScanlineActive] = useState(true);
 
   // Search & Navigation
   const [searchQuery, setSearchQuery] = useState('');
@@ -457,6 +468,10 @@ export default function App() {
       setSafelinkTime(parseInt(sTime) || 5);
       const bSound = await getFromDB("web_backsound_url", "");
       setWebBacksoundUrl(bSound);
+      const dText = await getFromDB("web_download_text", "DOWNLOAD NOW (SPEED)");
+      setWebDownloadText(dText);
+      const scanActive = await getFromDB("scanline_active", "true");
+      setIsScanlineActive(scanActive === "true");
 
       // Load Lists
       const loadedMods = await getFromDB(DB_KEYS.MODS, DEFAULT_MODS);
@@ -1017,6 +1032,14 @@ export default function App() {
     showToast("Branding utama web diperbarui!", "success");
   };
 
+  const handleSaveDownloadText = (text: string) => {
+    if (text) {
+      setWebDownloadText(text);
+      writeToDB("web_download_text", text);
+      showToast("Teks tombol download diperbarui!", "success");
+    }
+  };
+
   const handleSaveSafelink = (time: number, bcast: string) => {
     setSafelinkTime(time);
     writeToDB("web_safelink_time", time.toString());
@@ -1300,6 +1323,9 @@ export default function App() {
 
   return (
     <div style={rootStyles} className="min-h-screen pb-32 select-none relative font-sans text-black">
+      {/* RETRO CRT DISPLAY SCANLINES EFFECT */}
+      {isScanlineActive && <div className="retro-scanlines" />}
+
       {/* SCROLL PROGRESS INDICATOR */}
       <div
         className="fixed top-0 left-0 h-1.5 bg-[#FF71CD] z-[1000] transition-all duration-100"
@@ -1527,6 +1553,22 @@ export default function App() {
                           </button>
                         ))}
                       </div>
+                    </div>
+                    <div>
+                      <span className="block font-bold text-gray-500 uppercase mb-1">Efek Layar Retro CRT</span>
+                      <button
+                        onClick={() => {
+                          const val = !isScanlineActive;
+                          setIsScanlineActive(val);
+                          writeToDB("scanline_active", val ? "true" : "false");
+                          playSynth('click');
+                        }}
+                        className={`w-full py-1.5 text-[8px] font-extrabold uppercase border border-black rounded-md cursor-pointer flex items-center justify-center gap-1 transition-colors ${
+                          isScanlineActive ? 'bg-[#CCFF00] text-black border-2 border-black font-extrabold animate-pulse' : 'bg-white text-gray-400'
+                        }`}
+                      >
+                        <span>{isScanlineActive ? '● CRT SCANLINES [ ON ]' : '○ CRT SCANLINES [ OFF ]'}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1778,6 +1820,8 @@ export default function App() {
                   safelinkTime={safelinkTime}
                   webBacksoundUrl={webBacksoundUrl}
                   onSaveBacksound={handleSaveBacksound}
+                  webDownloadText={webDownloadText}
+                  onSaveDownloadText={handleSaveDownloadText}
                 />
               </div>
             ) : (
@@ -1897,6 +1941,7 @@ export default function App() {
                       triggerSafelink={triggerSafelink}
                       soundPlay={soundPlay}
                       isStandaloneView={true}
+                      downloadText={webDownloadText}
                     />
                   );
                 } else {
@@ -2126,6 +2171,7 @@ export default function App() {
                               onToggleFavorite={handleToggleFavorite}
                               triggerSafelink={triggerSafelink}
                               soundPlay={soundPlay}
+                              downloadText={webDownloadText}
                             />
                           </motion.div>
                         );
@@ -2340,6 +2386,22 @@ export default function App() {
                           ))}
                         </div>
                       </div>
+                      <div>
+                        <span className="block text-gray-500 uppercase mb-1">Efek Layar Retro CRT</span>
+                        <button
+                          onClick={() => {
+                            const val = !isScanlineActive;
+                            setIsScanlineActive(val);
+                            writeToDB("scanline_active", val ? "true" : "false");
+                            playSynth('click');
+                          }}
+                          className={`w-full py-1.5 text-[8px] font-extrabold uppercase border border-black rounded-md cursor-pointer flex items-center justify-center gap-1 transition-colors ${
+                            isScanlineActive ? 'bg-[#CCFF00] text-black border-2 border-black font-extrabold animate-pulse' : 'bg-white text-gray-400'
+                          }`}
+                        >
+                          <span>{isScanlineActive ? '● CRT SCANLINES [ ON ]' : '○ CRT SCANLINES [ OFF ]'}</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -2416,23 +2478,37 @@ export default function App() {
           className="mt-8 sm:mt-14 bg-white text-black border-2 sm:border-3 border-black brutal-shadow p-4 sm:p-6 text-center font-bold rounded-xl sm:rounded-2xl"
         >
           <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
-            {credits.map((c, index) => (
-              <motion.a
-                key={index}
-                href={c.url}
-                target="_blank"
-                rel="noreferrer"
-                whileHover={{ scale: 1.05, rotate: index % 2 === 0 ? 1 : -1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => playSynth('click')}
-                style={{ backgroundColor: c.color }}
-                className="px-3.5 py-1.5 border-2 border-black brutal-shadow-sm brutal-btn-sm flex items-center gap-1.5 text-[10px] uppercase text-black font-extrabold rounded-lg cursor-pointer"
-              >
-                <Share2 className="w-3.5 h-3.5 text-black" />
-                <span>{c.platform}:</span>
-                <span className="font-black underline">{c.handle}</span>
-              </motion.a>
-            ))}
+            {credits.map((c, index) => {
+              const p = c.platform.toLowerCase();
+              let CreditIcon = <Share2 className="w-3.5 h-3.5 text-black" />;
+              if (p.includes('youtube') || p.includes('yt')) CreditIcon = <Youtube className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('instagram') || p.includes('ig')) CreditIcon = <Instagram className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('facebook') || p.includes('fb')) CreditIcon = <Facebook className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('twitter') || p.includes('x.com')) CreditIcon = <Twitter className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('whatsapp') || p.includes('wa')) CreditIcon = <MessageSquare className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('telegram') || p.includes('tg')) CreditIcon = <Send className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('discord')) CreditIcon = <Gamepad2 className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('tiktok') || p.includes('tt')) CreditIcon = <Flame className="w-3.5 h-3.5 text-black" />;
+              else if (p.includes('website') || p.includes('web') || p.includes('globe')) CreditIcon = <Globe className="w-3.5 h-3.5 text-black" />;
+
+              return (
+                <motion.a
+                  key={index}
+                  href={c.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ scale: 1.05, rotate: index % 2 === 0 ? 1 : -1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => playSynth('click')}
+                  style={{ backgroundColor: c.color }}
+                  className="px-3.5 py-1.5 border-2 border-black brutal-shadow-sm brutal-btn-sm flex items-center gap-1.5 text-[10px] uppercase text-black font-extrabold rounded-lg cursor-pointer"
+                >
+                  {CreditIcon}
+                  <span>{c.platform}:</span>
+                  <span className="font-black underline">{c.handle}</span>
+                </motion.a>
+              );
+            })}
           </div>
 
           <p 
@@ -2452,9 +2528,25 @@ export default function App() {
           >
             © 2026 {webTitle} ID - DEVELOPED BY AXELUF TEAM
           </p>
-          <p className="text-[9px] text-gray-500 mt-2 font-mono uppercase tracking-wider">
-            HYBRID SYNC CLUSTER STATE: ACTIVE SECURE • 10.000+ CACHED DATA
-          </p>
+          
+          {/* Custom responsive social & platform icons in the footer lower third */}
+          <div className="flex flex-col items-center justify-center gap-1.5 mt-4 mb-2.5">
+            <span className="text-[7.5px] font-mono tracking-widest text-gray-400 uppercase">ALL SUPPORTED HUBS & PLATFORMS</span>
+            <div className="flex items-center justify-center gap-4 text-xs select-none bg-zinc-50 border border-black/10 py-1.5 px-4 rounded-xl">
+              <Youtube className="w-4 h-4 text-red-500 hover:scale-110 transition-transform cursor-pointer" />
+              <Instagram className="w-4 h-4 text-[#FF71CD] hover:scale-110 transition-transform cursor-pointer" />
+              <Facebook className="w-4 h-4 text-blue-600 hover:scale-110 transition-transform cursor-pointer" />
+              <Twitter className="w-4 h-4 text-black hover:scale-110 transition-transform cursor-pointer" />
+              <Globe className="w-4 h-4 text-emerald-500 hover:scale-110 transition-transform cursor-pointer" />
+              <Chrome className="w-4 h-4 text-yellow-500 hover:scale-110 transition-transform cursor-pointer" />
+              <Smartphone className="w-4 h-4 text-[#CCFF00] hover:scale-110 transition-transform cursor-pointer" />
+              <Laptop className="w-4 h-4 text-indigo-500 hover:scale-110 transition-transform cursor-pointer" />
+              <Gamepad2 className="w-4 h-4 text-purple-500 hover:scale-110 transition-transform cursor-pointer" />
+              <Database className="w-4 h-4 text-orange-500 hover:scale-110 transition-transform cursor-pointer" />
+            </div>
+          </div>
+
+
         </motion.footer>
 
         {/* BOTTOM NAVIGATION BAR (WhatsApp style, with MENU, HOME, MOD) */}

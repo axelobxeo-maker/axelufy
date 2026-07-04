@@ -35,18 +35,18 @@
 }
 
 [data-theme="pink"] {
-  --bg-color: #FF71CD;
-  --accent-color: #00F0FF;
-  --accent-dark: #0088AA;
+  --bg-color: #E299B7;
+  --accent-color: #00E4FF;
+  --accent-dark: #00889F;
   --card-bg: #FFFFFF;
   --text-color: #0C0C0C;
   --border-color: #000000;
 }
 
 [data-theme="mint"] {
-  --bg-color: #B2F9FC;
-  --accent-color: #8D00FF;
-  --accent-dark: #5C00AA;
+  --bg-color: #A2E1E3;
+  --accent-color: #7913E6;
+  --accent-dark: #5008A2;
   --card-bg: #FFFFFF;
   --text-color: #0C0C0C;
   --border-color: #000000;
@@ -62,9 +62,9 @@
 }
 
 [data-theme="orange"] {
-  --bg-color: #FF8A08;
+  --bg-color: #DB7C18;
   --accent-color: #FFF200;
-  --accent-dark: #C4B800;
+  --accent-dark: #A59B00;
   --card-bg: #FFFFFF;
   --text-color: #0C0C0C;
   --border-color: #000000;
@@ -296,4 +296,26 @@ body {
 }
 .skeleton {
   animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+/* Retro CRT scanlines */
+.retro-scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.08) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.015),
+    rgba(0, 255, 0, 0.005),
+    rgba(0, 0, 255, 0.015)
+  );
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+  z-index: 99999;
+  opacity: 0.85;
 }
