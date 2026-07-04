@@ -39,25 +39,25 @@ export default function DashboardAnalytics({ mods, visitorData }: DashboardAnaly
         <div className="bg-white text-black border-3 border-black p-3 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
           <div className="text-[10px] uppercase font-bold text-gray-500">Total Mod Rilis</div>
           <div className="font-syne font-extrabold text-2xl mt-0.5">{totalModsCount}</div>
-          <div className="text-[9px] text-[#2E8B6E] font-bold mt-1">🏷️ {mods.filter(m => !m.isDraft).length} Publik • {draftModsCount} Draft</div>
+          <div className="text-[9px] text-[#2E8B6E] font-bold mt-1">Publik: {mods.filter(m => !m.isDraft).length} • Draft: {draftModsCount}</div>
         </div>
 
         <div className="bg-white text-black border-3 border-black p-3 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
           <div className="text-[10px] uppercase font-bold text-gray-500">Total Views</div>
           <div className="font-syne font-extrabold text-2xl mt-0.5">{totalViews.toLocaleString()}</div>
-          <div className="text-[9px] text-[#2E8B6E] font-bold mt-1">📈 Avg: {totalModsCount ? Math.round(totalViews / totalModsCount) : 0} / mod</div>
+          <div className="text-[9px] text-[#2E8B6E] font-bold mt-1">Avg: {totalModsCount ? Math.round(totalViews / totalModsCount) : 0} / mod</div>
         </div>
 
         <div className="bg-white text-black border-3 border-black p-3 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
           <div className="text-[10px] uppercase font-bold text-gray-500">Total Downloads</div>
           <div className="font-syne font-extrabold text-2xl mt-0.5">{totalDownloads.toLocaleString()}</div>
-          <div className="text-[9px] text-blue-600 font-bold mt-1">📥 Mirror & Direct Link</div>
+          <div className="text-[9px] text-blue-600 font-bold mt-1">Mirror & Direct Link</div>
         </div>
 
         <div className="bg-white text-black border-3 border-black p-3 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
           <div className="text-[10px] uppercase font-bold text-gray-500">Broken Reports</div>
           <div className="font-syne font-extrabold text-2xl mt-0.5 text-red-600">{brokenLinksCount}</div>
-          <div className="text-[9px] text-red-500 font-bold mt-1">⚠️ Wajib Segera Diperbaiki</div>
+          <div className="text-[9px] text-red-500 font-bold mt-1">Wajib Segera Diperbaiki</div>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export default function DashboardAnalytics({ mods, visitorData }: DashboardAnaly
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Visitors & Downloads Trend */}
         <div className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000] flex flex-col">
-          <h4 className="font-syne font-extrabold text-xs uppercase mb-3 border-b-2 border-black pb-1.5">📈 Tren Pengunjung & Download (7 Hari Terakhir)</h4>
+          <h4 className="font-syne font-extrabold text-xs uppercase mb-3 border-b-2 border-black pb-1.5">Tren Pengunjung & Download (7 Hari Terakhir)</h4>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={visitorData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -101,7 +101,7 @@ export default function DashboardAnalytics({ mods, visitorData }: DashboardAnaly
 
         {/* Upload Activity Chart */}
         <div className="bg-white text-black border-3 border-black p-4 rounded-xl shadow-[6px_6px_0px_0px_#000000] flex flex-col">
-          <h4 className="font-syne font-extrabold text-xs uppercase mb-3 border-b-2 border-black pb-1.5">📤 Frekuensi Upload Modifikasi</h4>
+          <h4 className="font-syne font-extrabold text-xs uppercase mb-3 border-b-2 border-black pb-1.5">Frekuensi Upload Modifikasi</h4>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={visitorData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>

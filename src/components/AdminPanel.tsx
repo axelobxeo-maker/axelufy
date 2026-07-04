@@ -763,7 +763,7 @@ export default function AdminPanel({
         <div className="bg-red-50 border-3 border-red-500 p-4 rounded-xl text-black space-y-2 mb-4 shadow-[4px_4px_0px_0px_#EF4444]">
           <div className="flex items-center gap-2 text-red-600 font-extrabold text-xs uppercase">
             <AlertTriangle className="w-5 h-5 text-red-600 animate-pulse animate-bounce" />
-            <span>⚠️ TENTANG KONEKSI DAN KEAMANAN DATABASE</span>
+            <span>TENTANG KONEKSI DAN KEAMANAN DATABASE</span>
           </div>
           <p className="text-[10px] text-gray-700 font-bold leading-normal">
             {isTableMissing ? (
@@ -1654,7 +1654,7 @@ export default function AdminPanel({
                   <div className="space-y-1.5 max-h-36 overflow-y-auto">
                     {getDuplicateMods().map((dup, i) => (
                       <div key={i} className="flex justify-between items-center p-1.5 bg-white border rounded text-[10px]">
-                        <span>⚠️ Mod ID {dup.idx}: <strong>{dup.name}</strong></span>
+                        <span>Mod ID {dup.idx}: <strong>{dup.name}</strong></span>
                         <button
                           onClick={() => {
                             onDeleteMod(dup.idx);
@@ -1681,7 +1681,7 @@ export default function AdminPanel({
                     {getBrokenMods().map((br, i) => (
                       <div key={i} className="flex justify-between items-center p-1.5 bg-white border rounded text-[10px] gap-2">
                         <div className="truncate">
-                          <span className="font-extrabold text-red-600">⚠️ ID {br.idx} • {br.name}</span>
+                          <span className="font-extrabold text-red-600">ID {br.idx} • {br.name}</span>
                           <p className="text-[8px] text-gray-400 truncate">{br.url}</p>
                         </div>
                         <div className="flex gap-1 shrink-0">
@@ -1711,7 +1711,7 @@ export default function AdminPanel({
 
           {/* Bulk execution operations */}
           <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black space-y-4">
-            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-black">⚙️ Bulk Actions & Seleksi Massal</h3>
+            <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-black">Bulk Actions & Seleksi Massal</h3>
             <p className="text-[10px] text-gray-500 leading-normal">
               Pilih beberapa modifikasi di bawah ini untuk menghapus, mengubah kategori, atau mengatur draf secara massal demi efisiensi kerja.
             </p>
@@ -2082,7 +2082,7 @@ CREATE POLICY "Allow public delete" ON public.settings FOR DELETE USING (true);`
                   }}
                   className="bg-white border-2 border-black font-bold px-3 py-1.5 text-[9px] rounded-lg uppercase hover:bg-gray-100 shadow-sm"
                 >
-                  ➕ Tambah Opsi Baru
+                  Tambah Opsi Baru
                 </button>
                 <button
                   type="button"
@@ -2095,7 +2095,7 @@ CREATE POLICY "Allow public delete" ON public.settings FOR DELETE USING (true);`
                   }}
                   className="bg-orange-500 text-white border-2 border-black font-bold px-3 py-1.5 text-[9px] rounded-lg uppercase hover:bg-orange-600 shadow-sm"
                 >
-                  🔄 Reset Semua Suara
+                  Reset Semua Suara
                 </button>
               </div>
 
@@ -2116,7 +2116,7 @@ CREATE POLICY "Allow public delete" ON public.settings FOR DELETE USING (true);`
                   }}
                   className="w-full bg-[#4CCD99] text-black font-extrabold uppercase py-2.5 border-2 border-black rounded-xl text-xs shadow-sm active:translate-y-0.5"
                 >
-                  Simpan Perubahan Polling ⚡
+                  Simpan Perubahan Polling
                 </button>
               </div>
             </div>
@@ -2129,7 +2129,7 @@ CREATE POLICY "Allow public delete" ON public.settings FOR DELETE USING (true);`
         <div className="space-y-4 text-black">
           {editingRequestId && (
             <div className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
-              <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">📝 EDIT PERMINTAAN MOD</h3>
+              <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E]">EDIT PERMINTAAN MOD</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                 <div>
                   <label className="block font-bold mb-0.5 uppercase text-gray-700 text-[8px]">Nama Game / Aplikasi</label>
