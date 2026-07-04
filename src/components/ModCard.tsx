@@ -86,7 +86,7 @@ export default function ModCard({
   const [copiedLink, setCopiedLink] = useState(false);
   const handleCopyLink = () => {
     soundPlay('success');
-    const fullLink = `${window.location.origin}/?modId=${cardIndex}`;
+    const fullLink = `${window.location.origin}/?modId=${mod.id || cardIndex}`;
     navigator.clipboard.writeText(fullLink);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -109,7 +109,7 @@ export default function ModCard({
 
   // Sharing Links
   const shareText = `Download ${mod.name} Mod Premium di AXELUF! Full Cleaner & Anti-Banned: `;
-  const shareUrl = `${window.location.origin}/?modId=${cardIndex}`;
+  const shareUrl = `${window.location.origin}/?modId=${mod.id || cardIndex}`;
   const whatsappShare = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + shareUrl)}`;
   const telegramShare = `https://telegram.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
