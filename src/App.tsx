@@ -77,8 +77,23 @@ const isVideoUrl = (url: string | undefined): boolean => {
 };
 
 // SUPABASE CLIENT INITIALIZATION
-const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || "https://acsgbqipvdppkuetpobu.supabase.co";
-const SUPABASE_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjc2dicWlwdmRwcGt1ZXRwb2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNTUzMzksImV4cCI6MjA5ODYzMTMzOX0.n7iKRHdKxQAlsK8sCi_qaHZukLsoO7GqECOuAXbRSDc";
+let SUPABASE_URL = "";
+let SUPABASE_KEY = "";
+
+try {
+  SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || "";
+  SUPABASE_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || "";
+} catch (e) {
+  console.error("Failed to extract Supabase environment variables:", e);
+}
+
+if (!SUPABASE_URL || !SUPABASE_URL.startsWith("http")) {
+  SUPABASE_URL = "https://acsgbqipvdppkuetpobu.supabase.co";
+}
+if (!SUPABASE_KEY || SUPABASE_KEY.length < 20) {
+  SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjc2dicWlwdmRwcGt1ZXRwb2J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNTUzMzksImV4cCI6MjA5ODYzMTMzOX0.n7iKRHdKxQAlsK8sCi_qaHZukLsoO7GqECOuAXbRSDc";
+}
+
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DB_KEYS = {
@@ -207,10 +222,13 @@ export default function App() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (soundEnabled && webBacksoundUrl) {
-      audio.src = webBacksoundUrl;
+    // Use a lovely chiptune/retro gaming track as default if none is configured
+    const activeUrl = webBacksoundUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3';
+
+    if (soundEnabled && activeUrl) {
+      audio.src = activeUrl;
       audio.loop = true;
-      audio.volume = 0.45;
+      audio.volume = 0.35; // slightly lower volume for cozy background feel
       
       const playAudio = () => {
         audio.play().catch(err => {
@@ -222,16 +240,26 @@ export default function App() {
 
       const handleUserInteraction = () => {
         playAudio();
+        // Remove all listeners once audio plays
         window.removeEventListener('click', handleUserInteraction);
         window.removeEventListener('touchstart', handleUserInteraction);
+        window.removeEventListener('keydown', handleUserInteraction);
+        window.removeEventListener('scroll', handleUserInteraction);
+        window.removeEventListener('mousemove', handleUserInteraction);
       };
 
       window.addEventListener('click', handleUserInteraction);
       window.addEventListener('touchstart', handleUserInteraction);
+      window.addEventListener('keydown', handleUserInteraction);
+      window.addEventListener('scroll', handleUserInteraction);
+      window.addEventListener('mousemove', handleUserInteraction);
 
       return () => {
         window.removeEventListener('click', handleUserInteraction);
         window.removeEventListener('touchstart', handleUserInteraction);
+        window.removeEventListener('keydown', handleUserInteraction);
+        window.removeEventListener('scroll', handleUserInteraction);
+        window.removeEventListener('mousemove', handleUserInteraction);
       };
     } else {
       audio.pause();
@@ -466,7 +494,11 @@ export default function App() {
       // Recent searches
       const searchCache = localStorage.getItem('recent_searches');
       if (searchCache) {
-        setRecentSearches(JSON.parse(searchCache));
+        try {
+          setRecentSearches(JSON.parse(searchCache));
+        } catch (e) {
+          console.error("Failed to parse recent_searches", e);
+        }
       }
 
       // Banned state check
@@ -1209,17 +1241,20 @@ export default function App() {
         }
       }
 
-      // Live search matching
+      // Live search matching safely with fallbacks
+      const name = m.name || "";
+      const tag = m.tag || "";
+      const desc = m.desc || "";
       const matchSearch =
-        m.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        m.tag.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        m.desc.toLowerCase().includes(debouncedSearch.toLowerCase());
+        name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        tag.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        desc.toLowerCase().includes(debouncedSearch.toLowerCase());
 
       if (!matchSearch) return false;
 
-      // Category match
+      // Category match safely
       if (activeCategoryFilter) {
-        const itemTags = m.tag.split(',').map(t => t.trim().toUpperCase());
+        const itemTags = tag.split(',').map(t => t.trim().toUpperCase());
         return itemTags.includes(activeCategoryFilter);
       }
 
@@ -1227,10 +1262,18 @@ export default function App() {
     });
   };
 
-  // Bookmark / Favorite Storage helper
+  // Bookmark / Favorite Storage helper with safe array validation
   const [favorites, setFavorites] = useState<number[]>(() => {
-    const cache = localStorage.getItem('axel_favorites');
-    return cache ? JSON.parse(cache) : [];
+    try {
+      const cache = localStorage.getItem('axel_favorites');
+      if (cache) {
+        const parsed = JSON.parse(cache);
+        if (Array.isArray(parsed)) return parsed;
+      }
+      return [];
+    } catch {
+      return [];
+    }
   });
 
   const handleToggleFavorite = (index: number) => {
@@ -1537,15 +1580,15 @@ export default function App() {
       )}
 
       {/* PORTAL CONTAINER VIEW */}
-      <div className="max-w-3xl mx-auto px-3.5 pt-4">
+      <div className="max-w-3xl mx-auto px-2.5 sm:px-3.5 pt-2 sm:pt-4">
         {/* WEBPAGE BRANDING SECTION */}
         <motion.div
           initial={{ opacity: 0, y: -30, rotateX: -4, transformPerspective: 1000 }}
           animate={{ opacity: 1, y: 0, rotateX: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full bg-white border-3 border-black brutal-shadow mb-6 overflow-hidden rounded-2xl"
+          className="w-full bg-white border-2 sm:border-3 border-black brutal-shadow mb-4 sm:mb-6 overflow-hidden rounded-xl sm:rounded-2xl"
         >
-          <div className="relative w-full h-36 sm:h-48 bg-zinc-900 border-b-3 border-black overflow-hidden flex items-center justify-center">
+          <div className="relative w-full h-24 sm:h-48 bg-zinc-900 border-b-2 sm:border-b-3 border-black overflow-hidden flex items-center justify-center">
             {isVideoUrl(webBannerImage) ? (
               <video
                 src={webBannerImage}
@@ -1568,8 +1611,8 @@ export default function App() {
               />
             )}
           </div>
-          <div className={`p-4 pt-0 relative flex flex-col ${profileAlignment} gap-2`}>
-            <div className="relative -mt-10 sm:-mt-14 z-10">
+          <div className={`p-3 sm:p-4 pt-0 relative flex flex-col ${profileAlignment} gap-1.5 sm:gap-2`}>
+            <div className="relative -mt-8 sm:-mt-14 z-10">
               {isVideoUrl(webLogo) ? (
                 <video
                   src={webLogo}
@@ -1577,13 +1620,13 @@ export default function App() {
                   loop
                   muted
                   playsInline
-                  className="w-20 h-20 sm:w-24 sm:h-24 bg-theme-accent border-3 border-black brutal-shadow rounded-full object-cover"
+                  className="w-16 h-16 sm:w-24 sm:h-24 bg-theme-accent border-2 sm:border-3 border-black brutal-shadow rounded-full object-cover"
                 />
               ) : (
                 <img
                   src={webLogo}
                   alt="Logo Avatar"
-                  className="w-20 h-20 sm:w-24 sm:h-24 bg-theme-accent border-3 border-black brutal-shadow rounded-full object-cover"
+                  className="w-16 h-16 sm:w-24 sm:h-24 bg-theme-accent border-2 sm:border-3 border-black brutal-shadow rounded-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
@@ -1595,10 +1638,10 @@ export default function App() {
             <div className="w-full">
               <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-3 mt-1">
                 <div>
-                  <h1 className="font-syne font-extrabold text-2xl sm:text-3xl tracking-tight uppercase text-black leading-none">
+                  <h1 className="font-syne font-extrabold text-lg sm:text-3xl tracking-tight uppercase text-black leading-none">
                     {webTitle}
                   </h1>
-                  <p className="text-[10px] font-bold bg-theme-accent border-2 border-black inline-block px-2.5 py-1 brutal-shadow-sm mt-1.5 rounded-lg text-black uppercase">
+                  <p className="text-[9px] sm:text-[10px] font-bold bg-theme-accent border-1.5 sm:border-2 border-black inline-block px-2 sm:px-2.5 py-0.5 sm:py-1 brutal-shadow-sm mt-1 sm:mt-1.5 rounded-md sm:rounded-lg text-black uppercase">
                     {webSubtitle}
                   </p>
                 </div>
@@ -1743,19 +1786,8 @@ export default function App() {
                   <span className="text-[9px] text-gray-500 font-medium block mt-0.5">Silakan masuk menggunakan kredensial database Supabase Anda untuk mengakses panel administrasi.</span>
                 </div>
 
-                <div className="flex border-2 border-black rounded-xl overflow-hidden mb-4 shadow-sm">
-                  <button
-                    onClick={() => { setAuthMode('login'); playSynth('click'); }}
-                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'login' ? 'bg-black text-theme-bg' : 'bg-white text-black'}`}
-                  >
-                    Masuk (Login)
-                  </button>
-                  <button
-                    onClick={() => { setAuthMode('signup'); playSynth('click'); }}
-                    className={`flex-1 py-2 font-syne font-extrabold text-xs uppercase ${authMode === 'signup' ? 'bg-black text-theme-bg' : 'bg-white text-black'}`}
-                  >
-                    Daftar (Sign Up)
-                  </button>
+                <div className="bg-black text-white py-2 rounded-xl text-center mb-4 font-syne font-extrabold text-xs uppercase tracking-wider border-2 border-black">
+                  Masuk (Login) Admin
                 </div>
 
                 <div className="space-y-4">
@@ -1786,8 +1818,8 @@ export default function App() {
                     disabled={authLoading}
                     className="w-full bg-theme-accent text-black border-2 border-black font-extrabold py-3 rounded-xl brutal-shadow-sm hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_#000000] active:translate-y-1 transition-all text-xs uppercase disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <span>{authLoading ? 'MEMPROSES...' : authMode === 'login' ? 'MASUK KE DASHBOARD' : 'DAFTAR AKUN ADMIN'}</span>
-                    {!authLoading && (authMode === 'login' ? <ArrowRight className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
+                    <span>{authLoading ? 'MEMPROSES...' : 'MASUK KE DASHBOARD'}</span>
+                    {!authLoading && <ArrowRight className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -1828,7 +1860,12 @@ export default function App() {
 
               {/* Render Selected Mod */}
               {(() => {
-                const foundModIndex = mods.findIndex(m => m.id === activeSingleModId || m.id === `mod-${activeSingleModId}`);
+                const foundModIndex = mods.findIndex(m => {
+                  if (!m || m.id === undefined || m.id === null) return false;
+                  const mIdStr = m.id.toString();
+                  const targetIdStr = activeSingleModId.toString();
+                  return mIdStr === targetIdStr || `mod-${mIdStr}` === targetIdStr;
+                });
                 let modIndex = foundModIndex;
                 if (modIndex === -1) {
                   const numericIdx = parseInt(activeSingleModId);
@@ -1919,10 +1956,10 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-white border-3 border-black p-4 rounded-2xl brutal-shadow text-black space-y-3"
+                className="bg-white border-2 sm:border-3 border-black p-3 sm:p-4 rounded-xl sm:rounded-2xl brutal-shadow text-black space-y-2.5 sm:space-y-3"
               >
                 {/* Custom input bar */}
-                <div className="flex items-center border-3 border-black p-0.5 rounded-xl bg-zinc-50 shadow-sm relative text-black">
+                <div className="flex items-center border-2 sm:border-3 border-black p-0.5 rounded-lg sm:rounded-xl bg-zinc-50 shadow-sm relative text-black">
                   <Search className="w-4 h-4 text-black mx-3 shrink-0" />
                   <input
                     type="text"
@@ -2025,9 +2062,9 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                className="bg-[#4CCD99] border-3 border-black brutal-shadow-sm p-3.5 font-extrabold flex gap-3 items-center rounded-2xl"
+                className="bg-[#4CCD99] border-2 sm:border-3 border-black brutal-shadow-sm p-3 sm:p-3.5 font-extrabold flex gap-2.5 sm:gap-3 items-center rounded-xl sm:rounded-2xl"
               >
-                <Bell className="w-6 h-6 text-black shrink-0 animate-bounce" />
+                <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 animate-bounce" />
                 <p className="text-[10px] sm:text-xs text-black leading-snug">
                   Ada kendala link error, tautan mati, atau terdeteksi password salah? Hubungi tim support kami segera dengan memberikan laporan kerusakan pada tombol 'Lapor Mati' di tiap mod!
                 </p>
@@ -2043,7 +2080,7 @@ export default function App() {
 
                   if (displayedMods.length === 0) {
                     return (
-                      <div className="bg-white text-black border-3 border-black brutal-shadow p-8 text-center font-bold rounded-2xl flex flex-col items-center">
+                      <div className="bg-white text-black border-2 sm:border-3 border-black brutal-shadow p-5 sm:p-8 text-center font-bold rounded-xl sm:rounded-2xl flex flex-col items-center">
                         <Activity className="w-12 h-12 text-gray-400 mb-2 animate-pulse" />
                         <h4 className="font-syne font-extrabold text-sm uppercase">Mod Tidak Ditemukan!</h4>
                         <p className="text-[10px] text-gray-400 font-normal mt-1 leading-normal">
@@ -2102,7 +2139,7 @@ export default function App() {
                               setCurrentTab('mods');
                               window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
-                            className="w-full inline-flex items-center justify-center gap-2 bg-theme-accent hover:bg-theme-bg text-black font-extrabold text-xs uppercase px-6 py-4 border-3 border-black brutal-shadow-sm transition-all rounded-xl cursor-pointer"
+                            className="w-full inline-flex items-center justify-center gap-2 bg-theme-accent hover:bg-theme-bg text-black font-extrabold text-xs uppercase px-4 py-3 sm:px-6 sm:py-4 border-2 sm:border-3 border-black brutal-shadow-sm transition-all rounded-xl cursor-pointer"
                           >
                             <span>More (Lihat {visibleMods.length - 3} Mod Lainnya)</span>
                             <ArrowRight className="w-4 h-4" />
@@ -2137,7 +2174,7 @@ export default function App() {
               playSynth('click');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="w-10 h-10 bg-[#4CCD99] border-3 border-black text-black font-extrabold flex items-center justify-center rounded-xl shadow-[2px_2px_0_0_#000000] hover:translate-y-[-2px] hover:shadow-[3px_3px_0_0_#000000] active:translate-y-1 transition-all"
+            className="w-9 h-9 sm:w-10 sm:h-10 bg-[#4CCD99] border-2 sm:border-3 border-black text-black font-extrabold flex items-center justify-center rounded-xl shadow-[2px_2px_0_0_#000000] hover:translate-y-[-2px] hover:shadow-[3px_3px_0_0_#000000] active:translate-y-1 transition-all"
             title="Kembali Ke Atas"
           >
             ▲
@@ -2150,7 +2187,7 @@ export default function App() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mt-14 bg-white text-black border-3 border-black brutal-shadow p-6 text-center font-bold rounded-2xl"
+          className="mt-8 sm:mt-14 bg-white text-black border-2 sm:border-3 border-black brutal-shadow p-4 sm:p-6 text-center font-bold rounded-xl sm:rounded-2xl"
         >
           <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
             {credits.map((c, index) => (
