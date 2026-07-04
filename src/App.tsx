@@ -2055,33 +2055,37 @@ export default function App() {
 
                   return (
                     <>
-                      {displayedMods.map((item, idx) => (
-                        <motion.div
-                          id={`mod-card-${idx}`}
-                          key={item.id || idx}
-                          initial={{ opacity: 0, y: 40 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true, margin: "-100px" }}
-                          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                        >
-                          <ModCard
-                            mod={item}
-                            cardIndex={idx}
-                            onLike={handleLikeMod}
-                            onAddComment={handleAddComment}
-                            onRate={handleRateMod}
-                            onReportBroken={handleReportBroken}
-                            onSelectCategory={(tag) => {
-                              setActiveCategoryFilter(tag);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                            isFavorited={favorites.includes(idx)}
-                            onToggleFavorite={handleToggleFavorite}
-                            triggerSafelink={triggerSafelink}
-                            soundPlay={soundPlay}
-                          />
-                        </motion.div>
-                      ))}
+                      {displayedMods.map((item, idx) => {
+                        const globalIndex = mods.findIndex(m => m.id === item.id);
+                        const actualIndex = globalIndex !== -1 ? globalIndex : idx;
+                        return (
+                          <motion.div
+                            id={`mod-card-${actualIndex}`}
+                            key={item.id || actualIndex}
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                          >
+                            <ModCard
+                              mod={item}
+                              cardIndex={actualIndex}
+                              onLike={handleLikeMod}
+                              onAddComment={handleAddComment}
+                              onRate={handleRateMod}
+                              onReportBroken={handleReportBroken}
+                              onSelectCategory={(tag) => {
+                                setActiveCategoryFilter(tag);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              isFavorited={favorites.includes(actualIndex)}
+                              onToggleFavorite={handleToggleFavorite}
+                              triggerSafelink={triggerSafelink}
+                              soundPlay={soundPlay}
+                            />
+                          </motion.div>
+                        );
+                      })}
 
                       {currentTab === 'home' && visibleMods.length > 3 && (
                         <motion.div
