@@ -1254,6 +1254,10 @@ export default function App() {
 
       // Category match safely
       if (activeCategoryFilter) {
+        if (activeCategoryFilter === 'BOOKMARKED') {
+          const globalIdx = mods.findIndex(g => g.id === m.id);
+          return favorites.includes(globalIdx);
+        }
         const itemTags = tag.split(',').map(t => t.trim().toUpperCase());
         return itemTags.includes(activeCategoryFilter);
       }
@@ -1401,10 +1405,10 @@ export default function App() {
                     onClick={() => {
                       playSynth('success');
                       showToast("Menyaring Bookmark Terpilih", "success");
+                      setActiveCategoryFilter('BOOKMARKED');
                       setIsSidebarOpen(false);
-                      // Custom filter bookmarks
                     }}
-                    className="w-full text-left p-2.5 bg-yellow-50 hover:bg-yellow-100 border-2 border-black brutal-shadow-sm text-[11px] uppercase flex items-center justify-between text-yellow-800 rounded-lg"
+                    className="w-full text-left p-2.5 bg-yellow-50 hover:bg-yellow-100 border-2 border-black brutal-shadow-sm text-[11px] uppercase flex items-center justify-between text-yellow-800 rounded-lg cursor-pointer"
                   >
                     <div className="flex items-center gap-1.5">
                       <Trophy className="w-4 h-4 text-yellow-600 animate-bounce" />
@@ -1580,7 +1584,7 @@ export default function App() {
       )}
 
       {/* PORTAL CONTAINER VIEW */}
-      <div className="max-w-3xl mx-auto px-2.5 sm:px-3.5 pt-2 sm:pt-4">
+      <div className="max-w-3xl lg:max-w-6xl mx-auto px-2.5 sm:px-3.5 pt-2 sm:pt-4">
         {/* WEBPAGE BRANDING SECTION */}
         <motion.div
           initial={{ opacity: 0, y: -30, rotateX: -4, transformPerspective: 1000 }}
@@ -1919,7 +1923,10 @@ export default function App() {
           <>
             {/* MAIN PUBLIC WEB VIEW */}
             <main className="text-black space-y-6">
-              {/* Active Filtering Category Badge */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Left Column: Main content feed (8 cols on desktop) */}
+                <div className="col-span-12 lg:col-span-8 space-y-6">
+                  {/* Active Filtering Category Badge */}
               {activeCategoryFilter && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -2162,6 +2169,225 @@ export default function App() {
                   onUpvoteRequest={handleUpvoteRequest}
                 />
               )}
+                </div> {/* Close Left Column (col-span-8) */}
+
+                {/* Right Column: Desktop-Only Sticky Sidebar (4 cols on desktop, hidden on mobile) */}
+                <div className="hidden lg:block lg:col-span-4 space-y-6 sticky top-4">
+                  
+                  {/* Branding / Portal Control Panel Panel */}
+                  <div className="bg-white text-black border-3 border-black p-4 rounded-2xl brutal-shadow">
+                    <div className="flex items-center gap-2 mb-3 bg-[#A3FFD6] p-2.5 border-2 border-black rounded-xl">
+                      <Folder className="w-5 h-5 text-black shrink-0" />
+                      <h3 className="font-syne font-extrabold text-xs uppercase tracking-tight">Portal Navigasi</h3>
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* Home / Reset Button */}
+                      <button
+                        onClick={() => {
+                          setActiveCategoryFilter('');
+                          playSynth('click');
+                        }}
+                        className={`w-full text-left p-2.5 border-2 border-black brutal-shadow-sm text-[11px] font-bold uppercase flex items-center justify-between rounded-xl cursor-pointer transition-all hover:translate-y-[-1px] ${
+                          !activeCategoryFilter ? 'bg-[#A3FFD6] text-black' : 'bg-zinc-50 hover:bg-zinc-100 text-black'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <Home className="w-4 h-4" />
+                          <span>Beranda / Semua Mod</span>
+                        </div>
+                        <span className="bg-black text-white px-2 py-0.5 text-[9px] font-extrabold border border-black rounded-md">
+                          {mods.length}
+                        </span>
+                      </button>
+
+                      {/* Bookmark Filter Button */}
+                      {favorites.length > 0 && (
+                        <button
+                          onClick={() => {
+                            playSynth('success');
+                            showToast("Menyaring Bookmark Terpilih", "success");
+                            setActiveCategoryFilter('BOOKMARKED');
+                          }}
+                          className={`w-full text-left p-2.5 border-2 border-black brutal-shadow-sm text-[11px] font-bold uppercase flex items-center justify-between rounded-xl cursor-pointer transition-all hover:translate-y-[-1px] ${
+                            activeCategoryFilter === 'BOOKMARKED' ? 'bg-yellow-300 text-yellow-950' : 'bg-yellow-50 hover:bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <Trophy className="w-4 h-4 text-yellow-600 animate-bounce" />
+                            <span>Bookmark Anda</span>
+                          </div>
+                          <span className="bg-black text-white px-2 py-0.5 text-[9px] font-extrabold border border-black rounded-md">
+                            {favorites.length}
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Pinned Categories Sidebar Widget */}
+                  <div className="bg-white text-black border-3 border-black p-4 rounded-2xl brutal-shadow">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <Award className="w-4 h-4 text-black" />
+                      <h3 className="font-syne font-extrabold text-xs uppercase">Kategori Unggulan</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      {pinnedTags.map((tag, idx) => {
+                        const count = mods.filter(m => m.tag.toUpperCase().includes(tag.toUpperCase())).length;
+                        const isSelected = activeCategoryFilter === tag.toUpperCase();
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setActiveCategoryFilter(tag.toUpperCase());
+                              playSynth('click');
+                            }}
+                            className={`flex items-center justify-between gap-1 border-2 border-black p-2 text-[10px] font-bold rounded-lg cursor-pointer transition-all hover:translate-y-[-1px] ${
+                              isSelected ? 'bg-black text-white brutal-shadow-none' : 'bg-[#A3FFD6] hover:bg-[#8AE8C0] text-black brutal-shadow-xs'
+                            }`}
+                          >
+                            <span className="uppercase truncate pr-1">{tag}</span>
+                            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                              isSelected ? 'bg-white text-black' : 'bg-[#2E8B6E] text-white'
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* All Other Categories Widget */}
+                  <div className="bg-white text-black border-3 border-black p-4 rounded-2xl brutal-shadow">
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <Flame className="w-4 h-4 text-black" />
+                      <h3 className="font-syne font-extrabold text-xs uppercase">Semua Kategori</h3>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto pr-1">
+                      {getUniqueTags().map((tag, idx) => {
+                        if (pinnedTags.includes(tag)) return null;
+                        const count = mods.filter(m => m.tag.toUpperCase().includes(tag.toUpperCase())).length;
+                        const isSelected = activeCategoryFilter === tag.toUpperCase();
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setActiveCategoryFilter(tag);
+                              playSynth('click');
+                            }}
+                            className={`flex items-center gap-1 border border-black px-2 py-1 text-[9px] font-bold rounded-md cursor-pointer transition-all hover:translate-y-[-1px] ${
+                              isSelected ? 'bg-black text-white' : 'bg-zinc-100 hover:bg-[#A3FFD6]/40 text-black'
+                            }`}
+                          >
+                            <span className="uppercase">#{tag}</span>
+                            <span className="text-[7px] text-gray-400">({count})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Theme Layout Live Customizer */}
+                  <div className="bg-white text-black border-3 border-black p-4 rounded-2xl brutal-shadow">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <Wrench className="w-4 h-4 text-black" />
+                      <h3 className="font-syne font-extrabold text-xs uppercase">Kustomisasi Tema</h3>
+                    </div>
+                    <div className="space-y-3 text-[9px] font-bold text-gray-700">
+                      <div>
+                        <span className="block text-gray-500 uppercase mb-1">Pilihan Warna</span>
+                        <div className="flex items-center gap-2 bg-zinc-50 p-2 border border-black rounded-lg">
+                          <button onClick={() => { setCurrentTheme('green'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#CCFF00] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'green' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Retro Green Lime" />
+                          <button onClick={() => { setCurrentTheme('pink'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#FF71CD] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'pink' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Cyberpunk Pink" />
+                          <button onClick={() => { setCurrentTheme('mint'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#B2F9FC] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'mint' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Mint Fresh" />
+                          <button onClick={() => { setCurrentTheme('dark'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#121214] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'dark' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Deep Dark" />
+                          <button onClick={() => { setCurrentTheme('orange'); playSynth('click'); }} className={`w-5 h-5 rounded-full bg-[#FF8A08] border-2 border-black cursor-pointer transition-transform ${currentTheme === 'orange' ? 'scale-125 ring-2 ring-black' : 'hover:scale-110'}`} title="Lava Orange" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="block text-gray-500 uppercase mb-1">Border Radius</span>
+                        <div className="flex gap-1 bg-zinc-50 p-1 border border-black rounded-lg">
+                          {['4px', '12px', '16px', '24px'].map((rad) => (
+                            <button
+                              key={rad}
+                              onClick={() => { setCustomBorderRadius(rad); playSynth('click'); }}
+                              className={`flex-1 py-1 text-[8px] font-extrabold uppercase border border-black rounded-md cursor-pointer ${
+                                customBorderRadius === rad ? 'bg-black text-white' : 'bg-white hover:bg-zinc-100'
+                              }`}
+                            >
+                              {rad}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="block text-gray-500 uppercase mb-1">Kedalaman Bayangan</span>
+                        <div className="flex gap-1 bg-zinc-50 p-1 border border-black rounded-lg">
+                          {['3px', '6px', '9px', '12px'].map((shd) => (
+                            <button
+                              key={shd}
+                              onClick={() => { setCustomShadowOffset(shd); playSynth('click'); }}
+                              className={`flex-1 py-1 text-[8px] font-extrabold uppercase border border-black rounded-md cursor-pointer ${
+                                customShadowOffset === shd ? 'bg-black text-white' : 'bg-white hover:bg-zinc-100'
+                              }`}
+                            >
+                              {shd}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tap Game Brutal Widget */}
+                  <div className="bg-white text-black border-3 border-black p-4 rounded-2xl brutal-shadow text-center flex flex-col items-center">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Activity className="w-4 h-4 text-black shrink-0 animate-pulse" />
+                      <h3 className="font-syne font-extrabold text-xs uppercase">Tap Brutal Game</h3>
+                    </div>
+                    <div className="flex justify-between items-center bg-zinc-50 px-3 py-1.5 border border-black rounded-lg mb-3 text-[10px] w-full font-bold">
+                      <span>Skor: <span className="font-extrabold text-[#2E8B6E]">{easterEggScore}</span></span>
+                      <span>Tertinggi: <span className="text-pink-500">{easterEggHigh}</span></span>
+                    </div>
+                    <button
+                      onClick={handleEasterEggTap}
+                      className="w-full bg-[#FF71CD] hover:bg-[#ff55c1] text-black font-extrabold py-2 border-2 border-black rounded-xl brutal-shadow-sm text-[10px] uppercase flex items-center justify-center gap-1.5 cursor-pointer transition-transform hover:translate-y-[-1px]"
+                    >
+                      <span>Tap Brutal!</span>
+                      <Sparkles className="w-4 h-4 animate-bounce" />
+                    </button>
+                  </div>
+
+                  {/* Shortcuts & Support Admin */}
+                  <div className="bg-zinc-900 text-white border-3 border-black p-4 rounded-2xl brutal-shadow flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Shield className="w-4 h-4 text-[#A3FFD6]" />
+                        <h4 className="font-syne font-extrabold text-[10px] uppercase text-[#A3FFD6]">ADMIN SHORTCUT PANEL</h4>
+                      </div>
+                      <p className="text-[9px] text-gray-400 font-medium mb-3 leading-snug">
+                        Gunakan tombol di bawah ini untuk mengelola katalog, mengganti background backsound, mengedit polling, atau memantau laporan link rusak.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        window.location.hash = '#logy';
+                        playSynth('success');
+                      }}
+                      className="w-full bg-[#A3FFD6] text-black font-extrabold uppercase py-2 border border-black rounded-lg text-[9px] flex items-center justify-center gap-1.5 cursor-pointer hover:bg-white transition-all shadow-sm"
+                    >
+                      <Wrench className="w-3.5 h-3.5" />
+                      <span>MASUK KELOLA PORTAL</span>
+                    </button>
+                  </div>
+
+                </div> {/* Close Right Column Sidebar */}
+
+              </div> {/* Close 12-Column Grid */}
             </main>
           </>
         )}
