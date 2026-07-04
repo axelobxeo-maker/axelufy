@@ -150,7 +150,7 @@ export default function ModCard({
       whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="bg-white text-black border-3 border-black brutal-shadow overflow-hidden flex flex-col"
+      className="brutal-card overflow-hidden flex flex-col"
     >
       {/* OS Toolbar Frame */}
       <div className="bg-black text-white px-3 py-2 flex items-center justify-between brutal-border-b font-mono text-[9px] select-none">
@@ -542,7 +542,7 @@ export default function ModCard({
                           src={mod.videoUrl} 
                           controls 
                           className="w-full h-full object-contain"
-                          referrerPolicy="no-referrer"
+                          {...({ referrerPolicy: "no-referrer" } as any)}
                         ></video>
                       );
                     } else {
