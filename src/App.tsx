@@ -2549,26 +2549,19 @@ export default function App() {
 
         </motion.footer>
 
-        {/* BOTTOM NAVIGATION BAR (WhatsApp style, with MENU, HOME, MOD) */}
+        {/* BOTTOM NAVIGATION BAR (Neo-Brutalist floating pill style) */}
         {!(currentPath.includes('/logy') || currentPath.includes('#logy')) && (
-          <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white border-t-3 border-black py-3 px-4 shadow-[0_-4px_10px_rgba(0,0,0,0.08)]">
-            <div className="max-w-md mx-auto flex items-center justify-around">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-[999] bg-white border-3 border-black rounded-full py-2.5 px-4 shadow-[4px_4px_0px_0px_#000000]">
+            <div className="flex items-center justify-around">
               {/* MENU TAB */}
               <button
                 onClick={() => {
                   playSynth('click');
                   setIsSidebarOpen(true);
                 }}
-                className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 text-black font-extrabold uppercase text-[10px] cursor-pointer hover:bg-black/5 rounded-full transition-colors shrink-0"
               >
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -3 }}
-                  whileTap={{ scale: 0.85 }}
-                  transition={{ type: "spring", stiffness: 450, damping: 15 }}
-                  className="w-12 h-12 rounded-xl border-2 border-black bg-theme-accent hover:bg-theme-dark text-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] transition-all"
-                >
-                  <Menu className="w-5 h-5 text-black" />
-                </motion.div>
+                <Menu className="w-4 h-4 text-black" />
                 <span>MENU</span>
               </button>
 
@@ -2579,19 +2572,14 @@ export default function App() {
                   setCurrentTab('home');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+                className={`flex items-center gap-1.5 px-4 py-2 uppercase text-[10px] cursor-pointer transition-all ${
+                  currentTab === 'home'
+                    ? 'bg-theme-accent text-black border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000000] font-black'
+                    : 'text-zinc-500 font-extrabold hover:text-black hover:bg-black/5 rounded-full'
+                }`}
               >
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: 3 }}
-                  whileTap={{ scale: 0.85 }}
-                  transition={{ type: "spring", stiffness: 450, damping: 15 }}
-                  className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] transition-all ${
-                    currentTab === 'home' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
-                  }`}
-                >
-                  <Home className="w-5 h-5 text-black" />
-                </motion.div>
-                <span className={currentTab === 'home' ? 'text-black font-black' : 'text-zinc-500'}>HOME</span>
+                <Home className="w-4 h-4 text-black" />
+                <span>HOME</span>
               </button>
 
               {/* MOD TAB */}
@@ -2601,19 +2589,14 @@ export default function App() {
                   setCurrentTab('mods');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="flex flex-col items-center gap-1 text-black font-extrabold uppercase text-[10px] cursor-pointer"
+                className={`flex items-center gap-1.5 px-4 py-2 uppercase text-[10px] cursor-pointer transition-all ${
+                  currentTab === 'mods'
+                    ? 'bg-theme-accent text-black border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000000] font-black'
+                    : 'text-zinc-500 font-extrabold hover:text-black hover:bg-black/5 rounded-full'
+                }`}
               >
-                <motion.div 
-                  whileHover={{ scale: 1.1, rotate: -3 }}
-                  whileTap={{ scale: 0.85 }}
-                  transition={{ type: "spring", stiffness: 450, damping: 15 }}
-                  className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000000] transition-all ${
-                    currentTab === 'mods' ? 'bg-theme-accent text-black' : 'bg-white text-zinc-400'
-                  }`}
-                >
-                  <Gamepad2 className="w-5 h-5 text-black" />
-                </motion.div>
-                <span className={currentTab === 'mods' ? 'text-black font-black' : 'text-zinc-500'}>MOD</span>
+                <Gamepad2 className="w-4 h-4 text-black" />
+                <span>MOD</span>
               </button>
             </div>
           </div>
