@@ -36,6 +36,7 @@ interface ModCardProps {
   triggerSafelink: (index: number, url: string, isDownload: boolean) => void;
   soundPlay: (type: 'click' | 'success' | 'delete') => void;
   isStandaloneView?: boolean;
+  downloadText?: string;
 }
 
 export default function ModCard({
@@ -50,7 +51,8 @@ export default function ModCard({
   onToggleFavorite,
   triggerSafelink,
   soundPlay,
-  isStandaloneView = false
+  isStandaloneView = false,
+  downloadText
 }: ModCardProps) {
   const [commentName, setCommentName] = useState('');
   const [commentText, setCommentText] = useState('');
@@ -84,12 +86,29 @@ export default function ModCard({
   };
 
   const [copiedLink, setCopiedLink] = useState(false);
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     soundPlay('success');
     const fullLink = `${window.location.origin}/?modId=${mod.id || cardIndex}`;
-    navigator.clipboard.writeText(fullLink);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+    
+    try {
+      await navigator.clipboard.writeText(fullLink);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: mod.name,
+          text: `Download ${mod.name} Mod Premium di AXELUF! Full Cleaner & Anti-Banned:`,
+          url: fullLink,
+        });
+      } catch (err) {
+        // User cancelled, ignore
+      }
+    }
   };
 
   // Submit Rating
@@ -390,7 +409,12 @@ export default function ModCard({
                 className="flex-1 text-center bg-theme-accent text-black font-extrabold text-[10px] uppercase py-2.5 px-3 border-3 border-black brutal-shadow-sm brutal-btn flex items-center justify-center gap-2 rounded-xl cursor-pointer"
               >
                 <Download className="w-4 h-4 text-black animate-bounce" />
-                <span>DOWNLOAD NOW ({selectedMirror === 'primary' ? 'SPEED' : selectedMirror.toUpperCase()})</span>
+                <span>
+                  {downloadText 
+                    ? (selectedMirror === 'primary' ? downloadText : `${downloadText.replace(/\(SPEED\)/gi, '')} (${selectedMirror.toUpperCase()})`) 
+                    : `DOWNLOAD NOW (${selectedMirror === 'primary' ? 'SPEED' : selectedMirror.toUpperCase()})`
+                  }
+                </span>
               </motion.button>
 
               {mod.customButtons &&
@@ -609,50 +633,13 @@ export default function ModCard({
             {/* Sharing Panel */}
             <div className="flex items-center gap-1.5 bg-zinc-100 p-2 border-2 border-black rounded-lg">
               <span className="text-[8px] font-extrabold text-gray-500 uppercase">BAGIKAN MOD:</span>
-              <div className="flex gap-1">
-                <a
-                  href={whatsappShare}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => soundPlay('click')}
-                  className="bg-[#25D366] hover:bg-emerald-600 border border-black text-black px-1.5 py-0.5 text-[8px] rounded font-bold uppercase transition-transform hover:-translate-y-0.5"
-                >
-                  WhatsApp
-                </a>
-                <a
-                  href={telegramShare}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => soundPlay('click')}
-                  className="bg-[#0088cc] hover:bg-blue-600 border border-black text-white px-1.5 py-0.5 text-[8px] rounded font-bold uppercase transition-transform hover:-translate-y-0.5"
-                >
-                  Telegram
-                </a>
-                <a
-                  href={facebookShare}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => soundPlay('click')}
-                  className="bg-[#3b5998] hover:bg-indigo-700 border border-black text-white px-1.5 py-0.5 text-[8px] rounded font-bold uppercase transition-transform hover:-translate-y-0.5"
-                >
-                  Facebook
-                </a>
-                <a
-                  href={twitterShare}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => soundPlay('click')}
-                  className="bg-black hover:bg-zinc-800 border border-black text-white px-1.5 py-0.5 text-[8px] rounded font-bold uppercase transition-transform hover:-translate-y-0.5"
-                >
-                  X
-                </a>
-                <button
-                  onClick={handleCopyLink}
-                  className="bg-[#FFF200] hover:bg-yellow-400 border border-black text-black px-1.5 py-0.5 text-[8px] rounded font-extrabold uppercase transition-transform hover:-translate-y-0.5 ml-auto"
-                >
-                  {copiedLink ? 'Tersalin!' : 'Copy Link'}
-                </button>
-              </div>
+              <button
+                onClick={handleCopyLink}
+                className="flex-1 bg-[#CCFF00] hover:bg-[#b8e500] border-2 border-black text-black px-2.5 py-1 text-[8px] sm:text-[9px] rounded-md font-extrabold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none"
+              >
+                <span>🔗 {copiedLink ? 'Tersalin! Siap Dibagikan' : 'Bagikan Mod (1-Klik Copy & Share)'}</span>
+                <span className="text-[7px] text-gray-500 bg-white px-1 border border-black rounded font-mono font-bold">MULTI</span>
+              </button>
             </div>
 
             {/* Discussion / Comment Section Panel */}

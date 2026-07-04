@@ -41,7 +41,18 @@ import {
   Download,
   Trash,
   Copy,
-  Edit
+  Edit,
+  Youtube,
+  Instagram,
+  Facebook,
+  Twitter,
+  Globe,
+  Chrome,
+  Smartphone,
+  Laptop,
+  Gamepad2,
+  Send,
+  Flame
 } from 'lucide-react';
 import { ModItem, CreditItem, PresetLink, FAQItem, PollingTopic, RequestMod } from '../types';
 import DashboardAnalytics from './DashboardAnalytics';
@@ -58,6 +69,60 @@ const isVideoUrl = (url: string | undefined): boolean => {
     lowercase.includes('.webm?') ||
     lowercase.includes('/video/') ||
     (lowercase.includes('imagekit.io') && lowercase.includes('.mp4'))
+  );
+};
+
+const PlatformIconHelper = () => {
+  const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+
+  const platforms = [
+    { name: 'YouTube', icon: <Youtube className="w-4 h-4 text-red-500" /> },
+    { name: 'Instagram', icon: <Instagram className="w-4 h-4 text-pink-500" /> },
+    { name: 'Facebook', icon: <Facebook className="w-4 h-4 text-blue-600" /> },
+    { name: 'Twitter', icon: <Twitter className="w-4 h-4 text-black" /> },
+    { name: 'WhatsApp', icon: <MessageSquare className="w-4 h-4 text-emerald-500" /> },
+    { name: 'Telegram', icon: <Send className="w-4 h-4 text-blue-400" /> },
+    { name: 'Discord', icon: <Gamepad2 className="w-4 h-4 text-indigo-500" /> },
+    { name: 'TikTok', icon: <Flame className="w-4 h-4 text-orange-500 animate-pulse" /> },
+    { name: 'Website', icon: <Globe className="w-4 h-4 text-cyan-600" /> },
+  ];
+
+  const handleCopy = (name: string) => {
+    navigator.clipboard.writeText(name);
+    setCopiedPlatform(name);
+    setTimeout(() => setCopiedPlatform(null), 1500);
+  };
+
+  return (
+    <div className="bg-zinc-100 border-2 border-black p-3.5 rounded-xl text-black space-y-2.5 brutal-shadow-sm mb-4">
+      <div className="flex items-center justify-between">
+        <span className="font-syne font-extrabold text-[10px] uppercase flex items-center gap-1.5 text-black">
+          🔗 PANDUAN IKON PLATFORM SOSIAL (INTEGRASI OTOMATIS)
+        </span>
+        {copiedPlatform && (
+          <span className="bg-black text-[#CCFF00] text-[8px] font-extrabold px-2 py-0.5 rounded animate-pulse uppercase">
+            Platform '{copiedPlatform}' Disalin!
+          </span>
+        )}
+      </div>
+      <p className="text-[9px] text-gray-500 font-bold leading-normal">
+        Gunakan salah satu nama platform di bawah ini saat menambahkan Kredit Sosmed. Sistem AXELUF akan secara otomatis mendeteksi dan menampilkan ikon vektor premiumnya di footer situs Anda! Klik ikon untuk menyalin nama platform secara instan:
+      </p>
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 bg-white p-2.5 border border-black rounded-lg">
+        {platforms.map((p, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => handleCopy(p.name)}
+            className="flex items-center justify-center gap-2 py-1.5 px-2 bg-zinc-50 hover:bg-theme-accent border border-black rounded font-bold text-[9px] text-black transition-all hover:scale-105 cursor-pointer shadow-sm"
+            title={`Klik untuk Salin "${p.name}"`}
+          >
+            {p.icon}
+            <span>{p.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -104,6 +169,8 @@ interface AdminPanelProps {
   safelinkTime?: number;
   webBacksoundUrl?: string;
   onSaveBacksound?: (url: string) => void;
+  webDownloadText?: string;
+  onSaveDownloadText?: (text: string) => void;
 }
 
 export default function AdminPanel({
@@ -148,7 +215,9 @@ export default function AdminPanel({
   webBroadcastText = '',
   safelinkTime: propSafelinkTime = 5,
   webBacksoundUrl = '',
-  onSaveBacksound
+  onSaveBacksound,
+  webDownloadText = 'DOWNLOAD NOW (SPEED)',
+  onSaveDownloadText
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'mod' | 'branding' | 'social' | 'bulk' | 'sql' | 'analytics' | 'faqs' | 'polling' | 'requests' | 'categories'>('mod');
 
@@ -181,6 +250,7 @@ export default function AdminPanel({
   const [brandSubtitle, setBrandSubtitle] = useState(webSubtitle);
   const [brandLogo, setBrandLogo] = useState(webLogo);
   const [brandAlignment, setBrandAlignment] = useState(profileAlignment);
+  const [downloadTextVal, setDownloadTextVal] = useState(webDownloadText);
 
   // Announcement and Safelink States
   const [broadcastText, setBroadcastText] = useState(webBroadcastText);
@@ -200,7 +270,8 @@ export default function AdminPanel({
     if (webBackgroundImage) setBgUrl(webBackgroundImage === 'none' ? '' : webBackgroundImage);
     if (webBannerImage) setBannerUrl(webBannerImage);
     if (webBacksoundUrl !== undefined) setBacksoundUrl(webBacksoundUrl);
-  }, [webTitle, webSubtitle, webLogo, profileAlignment, webBroadcastText, propSafelinkTime, webBackgroundImage, webBannerImage, webBacksoundUrl]);
+    if (webDownloadText) setDownloadTextVal(webDownloadText);
+  }, [webTitle, webSubtitle, webLogo, profileAlignment, webBroadcastText, propSafelinkTime, webBackgroundImage, webBannerImage, webBacksoundUrl, webDownloadText]);
 
   // Credits States
   const [credPlatform, setCredPlatform] = useState('');
@@ -352,6 +423,9 @@ export default function AdminPanel({
   const handleBrandSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSaveBranding(brandTitle, brandSubtitle, brandLogo, brandAlignment);
+    if (onSaveDownloadText) {
+      onSaveDownloadText(downloadTextVal);
+    }
   };
 
   // Safelink / Announce Submission
@@ -715,6 +789,7 @@ export default function AdminPanel({
       {/* TAB MOD CONTENT */}
       {activeTab === 'mod' && (
         <div className="space-y-4">
+          <PlatformIconHelper />
           <form onSubmit={handleSubmitMod} className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000] text-black">
             <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E] flex justify-between items-center">
               <span className="flex items-center gap-1.5">
@@ -1114,6 +1189,7 @@ export default function AdminPanel({
       {/* TAB BRANDING CONTENT */}
       {activeTab === 'branding' && (
         <div className="space-y-4">
+          <PlatformIconHelper />
           <form onSubmit={handleBrandSubmit} className="bg-white border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
             <h3 className="font-syne font-extrabold text-sm uppercase mb-3 text-[#2E8B6E] flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-[#2E8B6E]" />
@@ -1161,6 +1237,19 @@ export default function AdminPanel({
                   <option value="items-center text-center">Rata Tengah</option>
                   <option value="items-end text-right">Rata Kanan</option>
                 </select>
+              </div>
+              <div className="md:col-span-2 p-2 bg-yellow-100/30 border-2 border-black rounded-lg text-black">
+                <label className="block font-bold mb-0.5 text-[8px] uppercase flex items-center gap-1">
+                  <Download className="w-3.5 h-3.5 text-yellow-600 animate-pulse" />
+                  <span>Teks Tombol Download Utama (Kustomisasi "DOWNLOAD NOW (SPEED)")</span>
+                </label>
+                <input
+                  type="text"
+                  value={downloadTextVal}
+                  onChange={(e) => setDownloadTextVal(e.target.value)}
+                  placeholder="Contoh: DOWNLOAD NOW (SPEED) atau AMBIL MOD (SPEED)"
+                  className="w-full border border-black p-1.5 font-bold bg-white text-black text-[10px] rounded focus:outline-none focus:ring-1 focus:ring-black"
+                />
               </div>
             </div>
             <button
