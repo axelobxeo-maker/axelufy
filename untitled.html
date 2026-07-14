@@ -1,0 +1,470 @@
+```html
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iGlassOS - Ultra Transparent Minimal Blur</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans untuk visual iOS modern -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons untuk ikon minimalis ala Apple -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    // Konfigurasi tema Tailwind agar mendukung class-based dark mode
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      transition: background-color 0.5s ease;
+    }
+
+    /* --- FORMULA KACA SUPER BENING DENGAN BLUR MINIMAL (CLEAR GLASS) --- */
+    
+    /* Versi Light Mode - Super Transparan Bening dengan Blur Tipis (10px) */
+    .crystal-panel {
+      background: rgba(255, 255, 255, 0.08); /* Sangat tipis agar benar-benar tembus pandang */
+      backdrop-filter: blur(10px) saturate(180%); /* Blur diturunkan agar detail background di belakang lebih terlihat */
+      -webkit-backdrop-filter: blur(10px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.4); /* Garis tepi tipis untuk refleksi sudut kaca */
+      box-shadow: 
+        0 1px 0px 0 rgba(255, 255, 255, 0.6) inset,
+        0 8px 24px -8px rgba(0, 0, 0, 0.15),
+        0 16px 32px -12px rgba(0, 0, 0, 0.1);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .crystal-panel:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.55);
+      box-shadow: 
+        0 1px 1px 0 rgba(255, 255, 255, 0.8) inset,
+        0 12px 28px -6px rgba(0, 0, 0, 0.2),
+        0 20px 40px -8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Versi Dark Mode - Kaca Hitam Transparan Tipis dengan Blur Tipis */
+    .dark .crystal-panel {
+      background: rgba(0, 0, 0, 0.2); /* Hitam transparan ultra tipis */
+      backdrop-filter: blur(10px) saturate(180%);
+      -webkit-backdrop-filter: blur(10px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 
+        0 1px 0px 0 rgba(255, 255, 255, 0.1) inset,
+        0 8px 24px -8px rgba(0, 0, 0, 0.35),
+        0 16px 32px -12px rgba(0, 0, 0, 0.25);
+    }
+    .dark .crystal-panel:hover {
+      background: rgba(0, 0, 0, 0.28);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    /* --- TOMBOL KACA SUPER BENING & TAJAM --- */
+    .crystal-btn {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(6px) saturate(150%);
+      -webkit-backdrop-filter: blur(6px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 
+        0 1px 0px 0 rgba(255, 255, 255, 0.4) inset,
+        0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .crystal-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.65);
+      box-shadow: 
+        0 1px 1px 0 rgba(255, 255, 255, 0.6) inset,
+        0 6px 15px rgba(0, 0, 0, 0.08);
+    }
+    .crystal-btn:active {
+      transform: scale(0.96);
+    }
+
+    .dark .crystal-btn {
+      background: rgba(0, 0, 0, 0.25);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 
+        0 1px 0px 0 rgba(255, 255, 255, 0.05) inset,
+        0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    .dark .crystal-btn:hover {
+      background: rgba(0, 0, 0, 0.35);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen flex flex-col justify-between p-4 md:p-8 relative selection:bg-white/20 animate-fade-in">
+
+  <!-- BACKGROUND: Full-screen Image Canvas (Sama seperti referensi Unsplash milikmu) -->
+  <div class="fixed inset-0 -z-10 overflow-hidden bg-slate-950">
+    <div class="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-105" id="full-bg" style="background-image: url('https://images.unsplash.com/photo-1752440093057-1c188e7137e9?q=80&w=1600&auto=format&fit=crop');"></div>
+    <!-- Layer gelap ekstra tipis agar teks tetap memiliki kontras tinggi -->
+    <div class="absolute inset-0 bg-black/15"></div>
+  </div>
+
+  <!-- CONTAINER UTAMA -->
+  <div class="max-w-6xl w-full mx-auto flex flex-col gap-8 flex-grow relative z-10">
+
+    <!-- HEADER: Minimalist iOS Style -->
+    <header class="flex justify-between items-center w-full py-4 px-2">
+      <div class="flex items-center gap-3">
+        <!-- Logo Kaca Transparan Tipis -->
+        <div class="w-10 h-10 rounded-2xl bg-white/10 dark:bg-black/10 border border-white/40 dark:border-white/15 flex items-center justify-center shadow-lg backdrop-blur-md">
+          <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 shadow-lg animate-pulse"></div>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white">iGlassOS</h1>
+          <p class="text-[9px] text-white/75 font-extrabold tracking-wider uppercase">Crisp Clear Edition</p>
+        </div>
+      </div>
+
+      <!-- Kanan: Mode Switcher & Live Clock -->
+      <div class="flex items-center gap-3">
+        <!-- Switcher Mode Terang/Gelap -->
+        <button onclick="toggleTheme()" class="crystal-btn p-2.5 rounded-full flex items-center justify-center" aria-label="Ubah Tema">
+          <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-yellow-400 transition-transform duration-300"></i>
+        </button>
+
+        <!-- Jam Live -->
+        <div class="crystal-panel py-2 px-4 rounded-full text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+          <span id="live-clock">10:00</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- INTRO SECTION -->
+    <section class="text-center md:text-left my-4 max-w-2xl px-2">
+      <span class="text-[9px] font-extrabold tracking-widest text-cyan-300 bg-white/10 border border-white/20 shadow-sm px-3.5 py-1.5 rounded-full">CRYSTAL TRANSPARENT (CLEAR)</span>
+      <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight mt-4 mb-4 leading-tight text-white drop-shadow-md">
+        Kaca Jernih Tanpa Batas.
+      </h2>
+      <p class="text-sm md:text-base text-white/90 leading-relaxed font-light drop-shadow-sm">
+        Dengan mengurangi efek blur pada kartu kaca, keindahan gradasi detail warna latar belakang kini dapat menembus permukaan dengan jauh lebih presisi dan berkilau tajam.
+      </p>
+    </section>
+
+    <!-- LAYOUT DENGAN SIDEBAR DAN MAIN CONTENT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- KIRI: SIDEBAR MENU (Struktur Navigasi yang Kamu Kirim) -->
+      <aside class="lg:col-span-4 w-full">
+        <div class="crystal-panel p-5 rounded-[24px]">
+          <h3 class="text-xs font-bold tracking-wider text-white/70 mb-4 px-2 uppercase">Navigasi Utama</h3>
+          <nav class="space-y-2 w-full">
+            <!-- Button Aktif (Dashboard) -->
+            <button onclick="setActiveMenu('dashboard')" id="btn-dashboard" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-slate-900 font-semibold transition-all duration-300 shadow-lg border border-white">
+              <i data-lucide="home" class="w-5 h-5"></i>
+              <span>Dashboard</span>
+            </button>
+
+            <!-- Search -->
+            <button onclick="setActiveMenu('search')" id="btn-search" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium transition-all duration-300 hover:bg-white/15">
+              <i data-lucide="search" class="w-5 h-5"></i>
+              <span>Search</span>
+            </button>
+
+            <!-- Sales Analytics -->
+            <button onclick="setActiveMenu('sales')" id="btn-sales" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium transition-all duration-300 hover:bg-white/15">
+              <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+              <span>Sales Analytics</span>
+            </button>
+
+            <!-- Notification -->
+            <button onclick="setActiveMenu('notifications')" id="btn-notifications" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium transition-all duration-300 hover:bg-white/15">
+              <i data-lucide="bell" class="w-5 h-5"></i>
+              <span>Notification</span>
+            </button>
+
+            <!-- Account Settings -->
+            <button onclick="setActiveMenu('settings')" id="btn-settings" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium transition-all duration-300 hover:bg-white/15">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              <span>Account Settings</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Background Presets di Bawah Sidebar -->
+        <div class="crystal-panel p-5 rounded-[24px] mt-6">
+          <h4 class="text-xs font-bold tracking-wider text-white/70 mb-3 px-2 uppercase">Ganti Gambar Latar</h4>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="changeBackground('fluid')" class="py-2 px-3 rounded-xl text-left text-xs bg-white/10 hover:bg-white/20 transition truncate border border-white/25 font-medium">Fluid Flow</button>
+            <button onclick="changeBackground('aurora')" class="py-2 px-3 rounded-xl text-left text-xs bg-white/10 hover:bg-white/20 transition truncate border border-white/25 font-medium">Aurora Lights</button>
+            <button onclick="changeBackground('space')" class="py-2 px-3 rounded-xl text-left text-xs bg-white/10 hover:bg-white/20 transition truncate border border-white/25 font-medium">Cosmic Blue</button>
+            <button onclick="changeBackground('nature')" class="py-2 px-3 rounded-xl text-left text-xs bg-white/10 hover:bg-white/20 transition truncate border border-white/25 font-medium">Cloud Peak</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- KANAN: WIDGET CONTENT & INFORMATION -->
+      <main class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+
+        <!-- Widget 1: Smart Light Controller -->
+        <div class="crystal-panel p-6 rounded-[24px] flex flex-col justify-between gap-6 min-h-[220px]">
+          <div class="flex justify-between items-start">
+            <div class="p-3 bg-white/10 rounded-2xl border border-white/30 shadow-sm">
+              <i data-lucide="lightbulb" class="w-6 h-6 text-yellow-400 transition-colors" id="bulb-icon"></i>
+            </div>
+            <span class="text-[10px] text-white/60 font-bold tracking-wider">RUANG KELUARGA</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white mb-1">Pencahayaan Pintar</h3>
+            <p class="text-xs text-white/70 mb-4" id="lamp-status">Status: Menyala (80%)</p>
+            <div class="flex items-center gap-4">
+              <button onclick="toggleLamp()" id="lamp-btn" class="flex-grow crystal-btn py-2.5 px-4 rounded-2xl text-xs font-bold text-white flex items-center justify-center gap-2">
+                Matikan
+              </button>
+              <input type="range" min="10" max="100" value="80" oninput="adjustBrightness(this.value)" class="w-24 accent-white bg-white/20 h-1 rounded-lg appearance-none cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget 2: Music Player -->
+        <div class="crystal-panel p-6 rounded-[24px] flex flex-col justify-between gap-6 min-h-[220px]">
+          <div class="flex items-center gap-4">
+            <!-- Album Art Mini transparan jernih -->
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative overflow-hidden shadow-md border border-white/40">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              <i data-lucide="music" class="w-7 h-7 text-white/90 relative z-10 animate-pulse"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-base text-white line-clamp-1">Golden Hour</h4>
+              <p class="text-xs text-white/60 font-semibold">JVKE</p>
+            </div>
+          </div>
+
+          <div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-white/20 h-1 rounded-full overflow-hidden mb-4">
+              <div class="bg-white h-full w-[45%] transition-all duration-300" id="music-progress"></div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="flex justify-between items-center px-4">
+              <button class="text-white/60 hover:text-white transition"><i data-lucide="skip-back" class="w-5 h-5"></i></button>
+              <button onclick="togglePlay()" id="play-btn" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center shadow-md hover:scale-105 active:scale-95 border border-white/40 transition">
+                <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5" id="play-icon"></i>
+              </button>
+              <button class="text-white/60 hover:text-white transition"><i data-lucide="skip-forward" class="w-5 h-5"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget 3: Mini Notes / Todo -->
+        <div class="crystal-panel p-6 rounded-[24px] flex flex-col justify-between gap-4 md:col-span-2 min-h-[230px]">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold tracking-wider text-white/70 uppercase">TUGAS HARI INI</span>
+            <span class="text-[10px] py-1 px-2.5 rounded-full bg-white/10 border border-white/20 text-white font-bold">Aktif</span>
+          </div>
+
+          <div class="space-y-3 flex-grow overflow-y-auto max-h-[110px] pr-1">
+            <!-- Todo Item 1 -->
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="task-1" class="w-4 h-4 rounded-md border-white/35 bg-white/5 accent-white cursor-pointer">
+              <label for="task-1" class="text-xs text-white/90 font-medium cursor-pointer select-none">Review wireframe website baru</label>
+            </div>
+            <!-- Todo Item 2 -->
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="task-2" checked class="w-4 h-4 rounded-md border-white/35 bg-white/5 checked:line-through accent-white cursor-pointer">
+              <label for="task-2" class="text-xs text-white/50 line-through font-medium cursor-pointer select-none">Ekspor aset ikon iOS</label>
+            </div>
+          </div>
+
+          <!-- Add Task Mini -->
+          <div class="flex gap-2 pt-2 border-t border-white/10">
+            <input type="text" id="todo-input" placeholder="Tambah tugas baru..." class="flex-grow bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-white/50 text-white placeholder-white/50">
+            <button onclick="addTodo()" class="crystal-btn p-1.5 rounded-xl"><i data-lucide="plus" class="w-4 h-4 text-white"></i></button>
+          </div>
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-6 mt-12 border-t border-white/10 max-w-6xl w-full mx-auto px-2 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/60">
+    <p>&copy; 2026 iGlassOS. Terinspirasi dari filosofi desain minimalis Apple Inc.</p>
+    <div class="flex gap-4 font-bold">
+      <a href="#" class="hover:text-white transition">Privasi</a>
+      <span>•</span>
+      <a href="#" class="hover:text-white transition">Panduan Gaya</a>
+      <span>•</span>
+      <a href="#" class="hover:text-white transition">GitHub</a>
+    </div>
+  </footer>
+
+  <!-- SISTEM LOGIKA INTERAKTIF (JAVASCRIPT) -->
+  <script>
+    // Inisialisasi ikon Lucide
+    lucide.createIcons();
+
+    // 1. Logika Jam Waktu Nyata (Live Clock)
+    function updateClock() {
+      const clockElement = document.getElementById('live-clock');
+      const now = new Date();
+      let hours = now.getHours().toString().padStart(2, '0');
+      let minutes = now.getMinutes().toString().padStart(2, '0');
+      clockElement.textContent = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Logika Ganti Background Unsplash Dinamis
+    const backgrounds = {
+      fluid: 'https://images.unsplash.com/photo-1752440093057-1c188e7137e9?q=80&w=1600&auto=format&fit=crop',
+      aurora: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1600&auto=format&fit=crop',
+      space: 'https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?q=80&w=1600&auto=format&fit=crop',
+      nature: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop'
+    };
+
+    function changeBackground(type) {
+      const bgElement = document.getElementById('full-bg');
+      if (backgrounds[type]) {
+        bgElement.style.backgroundImage = `url('${backgrounds[type]}')`;
+      }
+    }
+
+    // 3. Logika Aktif Pasif Menu Sidebar (Gaya Unsur Menu yang Kamu Kirim)
+    function setActiveMenu(activeId) {
+      const buttons = document.querySelectorAll('.menu-btn');
+      
+      buttons.forEach(btn => {
+        const id = btn.id.replace('btn-', '');
+        if (id === activeId) {
+          // Aktif (Putih Padat, Teks Gelap)
+          btn.className = "menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-slate-900 font-semibold transition-all duration-300 shadow-lg border border-white";
+        } else {
+          // Transparan (Teks Putih)
+          btn.className = "menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium transition-all duration-300 hover:bg-white/15";
+        }
+      });
+    }
+
+    // 4. Logika Toggle Mode Terang/Gelap (Light/Dark Theme)
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        icon.setAttribute('data-lucide', 'sun');
+        icon.classList.remove('text-yellow-400');
+        icon.classList.add('text-amber-500');
+        icon.style.transform = 'rotate(0deg)';
+      } else {
+        html.classList.add('dark');
+        icon.setAttribute('data-lucide', 'moon');
+        icon.classList.remove('text-amber-500');
+        icon.classList.add('text-yellow-400');
+        icon.style.transform = 'rotate(360deg)';
+      }
+      lucide.createIcons();
+    }
+
+    // 5. Logika Smart Controller (Lamp Switch)
+    let isLampOn = true;
+    function toggleLamp() {
+      const btn = document.getElementById('lamp-btn');
+      const icon = document.getElementById('bulb-icon');
+      const status = document.getElementById('lamp-status');
+      
+      isLampOn = !isLampOn;
+      if (isLampOn) {
+        btn.textContent = 'Matikan';
+        icon.classList.remove('text-white/20');
+        icon.classList.add('text-yellow-400');
+        status.textContent = 'Status: Menyala (80%)';
+      } else {
+        btn.textContent = 'Nyalakan';
+        icon.classList.remove('text-yellow-400');
+        icon.classList.add('text-white/20');
+        status.textContent = 'Status: Mati';
+      }
+    }
+
+    function adjustBrightness(val) {
+      if (isLampOn) {
+        const status = document.getElementById('lamp-status');
+        status.textContent = `Status: Menyala (${val}%)`;
+      }
+    }
+
+    // 6. Logika Music Player Mini
+    let isPlaying = false;
+    let progressInterval;
+    function togglePlay() {
+      const btnIcon = document.getElementById('play-icon');
+      const progressBar = document.getElementById('music-progress');
+      
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        btnIcon.setAttribute('data-lucide', 'pause');
+        btnIcon.classList.remove('ml-0.5'); 
+        lucide.createIcons();
+        
+        let width = 45;
+        progressInterval = setInterval(() => {
+          if (width >= 100) width = 0;
+          width += 0.5;
+          progressBar.style.width = width + '%';
+        }, 100);
+      } else {
+        btnIcon.setAttribute('data-lucide', 'play');
+        btnIcon.classList.add('ml-0.5'); 
+        lucide.createIcons();
+        clearInterval(progressInterval);
+      }
+    }
+
+    // 7. Logika Todo List Sederhana
+    function addTodo() {
+      const input = document.getElementById('todo-input');
+      const taskText = input.value.trim();
+      if (taskText === "") return;
+
+      const container = document.querySelector('.space-y-3');
+      const id = 'task-' + Date.now();
+
+      const todoDiv = document.createElement('div');
+      todoDiv.className = 'flex items-center gap-3 animate-pulse';
+      todoDiv.innerHTML = `
+        <input type="checkbox" id="${id}" class="w-4 h-4 rounded-md border-white/30 bg-white/5 accent-white cursor-pointer">
+        <label for="${id}" class="text-xs text-white/80 font-medium cursor-pointer select-none">${taskText}</label>
+      `;
+
+      container.appendChild(todoDiv);
+      input.value = "";
+
+      setTimeout(() => {
+        todoDiv.classList.remove('animate-pulse');
+      }, 500);
+    }
+  </script>
+</body>
+</html>
+
+```
